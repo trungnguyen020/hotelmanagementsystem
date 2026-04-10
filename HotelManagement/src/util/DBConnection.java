@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public final class DBConnection {
     private static final String URL =
-        "jdbc:mysql://localhost:3306/hotel_mgmt?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+        "jdbc:mysql://localhost:3306/hotel_mgmt_v2?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
     private static final String USER = "root";
     private static final String PASS = "123456"; // đổi theo máy bạn
 
