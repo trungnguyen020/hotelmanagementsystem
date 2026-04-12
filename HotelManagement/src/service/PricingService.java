@@ -13,6 +13,8 @@ public class PricingService {
 		public BigDecimal roomCharge; // tiền phòng (fullDays + halfDay)*price
 		public BigDecimal subtotal; // hiện tại = roomCharge (chưa dịch vụ)
 		public BigDecimal autoDiscountPercent; // 0/10/20
+		public java.math.BigDecimal serviceTotal;  // tiền dịch vụ
+		public java.math.BigDecimal totalBeforeDiscount; // phòng + dịch vụ
 	}
 
 	// checkOut < 07:00 => không tính ngày đó (chỉ tính đến ngày trước)
@@ -54,6 +56,8 @@ public class PricingService {
 		r.roomCharge = roomCharge;
 		r.subtotal = roomCharge;
 		r.autoDiscountPercent = autoDiscount;
+		r.serviceTotal = java.math.BigDecimal.ZERO;
+		r.totalBeforeDiscount = r.roomCharge;
 		return r;
 	}
 

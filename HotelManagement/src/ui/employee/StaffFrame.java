@@ -63,7 +63,10 @@ public class StaffFrame extends JFrame {
         root.add(cardPanel, BorderLayout.CENTER);
 
         btnRooms.addActionListener(e -> { roomsPanel.loadRooms(); card.show(cardPanel, "rooms"); });
-        btnServices.addActionListener(e -> card.show(cardPanel, "services"));
+        btnServices.addActionListener(e -> {
+            servicesPanel.reload();
+            card.show(cardPanel, "services");
+        });
         btnCheckin.addActionListener(e -> card.show(cardPanel, "checkin"));
         btnCheckout.addActionListener(e -> { checkoutPanel.reload(); card.show(cardPanel, "checkout"); });
 
