@@ -101,11 +101,11 @@ public class LoginFrame extends JFrame {
 
             // TODO: mở frame theo role
             if (emp.getRole() == Role.ADMIN) {
-                // new ui.admin.AdminFrame(emp).setVisible(true);
+                new ui.admin.AdminFrame(emp).setVisible(true);
             } else {
-                // new ui.employee.EmployeeFrame(emp).setVisible(true);
+                new ui.employee.StaffFrame(emp).setVisible(true);
             }
-            // dispose();
+            dispose();
 
         } catch (Exception ex) {
             ex.printStackTrace();
