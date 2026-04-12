@@ -214,3 +214,13 @@ INSERT INTO services(name, unit_price, unit, active) VALUES
 INSERT INTO customers(full_name, phone, id_number) VALUES
 ('Nguyen Van A', '0900000001', '0123456789'),
 ('Tran Thi B',   '0900000002', '9876543210');
+
+USE hotel_mgmt_v2;
+
+ALTER TABLE stays
+  ADD COLUMN expected_checkout_at DATETIME NULL AFTER checkout_at;
+
+ALTER TABLE invoices
+  ADD COLUMN subtotal DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER paid_by,
+  ADD COLUMN discount_percent DECIMAL(5,2) NOT NULL DEFAULT 0 AFTER subtotal,
+  ADD COLUMN discount_amount DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER discount_percent;

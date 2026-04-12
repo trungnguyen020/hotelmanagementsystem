@@ -15,6 +15,11 @@ public class StaffFrame extends JFrame {
 	private final CardLayout card = new CardLayout();
     private final JPanel cardPanel = new JPanel(card);
 
+    private final RoomsPanel roomsPanel = new RoomsPanel();
+    private final ServicesPanel servicesPanel = new ServicesPanel();
+    private final CheckinPanel checkinPanel;
+    private final CheckoutPanel checkoutPanel;
+
     public StaffFrame(Employee me) {
         setTitle("Nhân viên - Hotel Management | " + me.getFullName());
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -48,18 +53,19 @@ public class StaffFrame extends JFrame {
             menu.add(Box.createVerticalStrut(8));
         }
 
-        // Cards
-        cardPanel.add(new RoomsPanel(), "rooms");
-        cardPanel.add(new ServicesPanel(), "services");
-        cardPanel.add(new CheckinPanel(), "checkin");
-        cardPanel.add(new CheckoutPanel(), "checkout");
+        checkinPanel = new CheckinPanel(me, roomsPanel);
+        checkoutPanel = new CheckoutPanel(me, roomsPanel);
+
+        cardPanel.add(roomsPanel, "rooms");
+        cardPanel.add(servicesPanel, "services");
+        cardPanel.add(checkinPanel, "checkin");
+        cardPanel.add(checkoutPanel, "checkout");
         root.add(cardPanel, BorderLayout.CENTER);
 
-        // Actions
-        btnRooms.addActionListener(e -> card.show(cardPanel, "rooms"));
+        btnRooms.addActionListener(e -> { roomsPanel.loadRooms(); card.show(cardPanel, "rooms"); });
         btnServices.addActionListener(e -> card.show(cardPanel, "services"));
         btnCheckin.addActionListener(e -> card.show(cardPanel, "checkin"));
-        btnCheckout.addActionListener(e -> card.show(cardPanel, "checkout"));
+        btnCheckout.addActionListener(e -> { checkoutPanel.reload(); card.show(cardPanel, "checkout"); });
 
         btnLogout.addActionListener(e -> {
             dispose();
