@@ -47,8 +47,10 @@ public class CheckinPanel extends JPanel {
         this.roomsPanel = roomsPanel;
 
         setLayout(new BorderLayout(10, 10));
+        setBackground(new Color(250,250,252));
 
         JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
         add(form, BorderLayout.NORTH);
 
         GridBagConstraints c = new GridBagConstraints();
@@ -81,9 +83,13 @@ public class CheckinPanel extends JPanel {
         c.gridx = 1; c.gridy = y; form.add(spnDays, c); y++;
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttons.setOpaque(false);
         JButton btnReloadRooms = new JButton("Load phòng trống");
+        btnReloadRooms.setBackground(new Color(60,130,200)); btnReloadRooms.setForeground(Color.WHITE); btnReloadRooms.setFocusPainted(false);
         JButton btnCheckin = new JButton("Check-in");
+        btnCheckin.setBackground(new Color(80,160,110)); btnCheckin.setForeground(Color.WHITE); btnCheckin.setFocusPainted(false);
         JButton btnClear = new JButton("Xóa form");
+        btnClear.setBackground(new Color(180,180,180)); btnClear.setForeground(Color.WHITE); btnClear.setFocusPainted(false);
         buttons.add(btnReloadRooms);
         buttons.add(btnCheckin);
         buttons.add(btnClear);

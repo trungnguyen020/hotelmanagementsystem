@@ -5,6 +5,7 @@ import model.Employee;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class StaffFrame extends JFrame {
 
@@ -28,15 +29,19 @@ public class StaffFrame extends JFrame {
 
         JPanel root = new JPanel(new BorderLayout());
         root.setBorder(new EmptyBorder(10, 10, 10, 10));
+        root.setBackground(new Color(250, 251, 253));
         setContentPane(root);
 
         JLabel top = new JLabel("NHÂN VIÊN  |  " + me.getFullName() + " (" + me.getRole() + ")");
         top.setFont(new Font("Tahoma", Font.BOLD, 14));
+        top.setForeground(new Color(30,60,90));
         root.add(top, BorderLayout.NORTH);
 
         JPanel menu = new JPanel();
-        menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
+        // Use GridLayout so buttons stretch vertically to fill the left area
+        menu.setLayout(new GridLayout(0, 1, 0, 8));
         menu.setBorder(new EmptyBorder(0, 0, 0, 10));
+        menu.setBackground(new Color(235,240,245));
         root.add(menu, BorderLayout.WEST);
 
         JButton btnRooms = new JButton("Quản lý phòng");
@@ -45,12 +50,27 @@ public class StaffFrame extends JFrame {
         JButton btnCheckout = new JButton("Check-out");
         JButton btnLogout = new JButton("Đăng xuất");
 
-        Dimension btnSize = new Dimension(200, 40);
-        for (JButton b : new JButton[]{btnRooms, btnServices, btnCheckin, btnCheckout, btnLogout}) {
-            b.setMaximumSize(btnSize);
-            b.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // Style buttons: add icons, colors and larger size
+        JButton[] buttons = new JButton[]{btnRooms, btnServices, btnCheckin, btnCheckout, btnLogout};
+        Color btnBg = new Color(60,130,200);
+        for (int i = 0; i < buttons.length; i++) {
+            JButton b = buttons[i];
+            b.setFocusPainted(false);
+            b.setForeground(Color.WHITE);
+            b.setBackground(i == buttons.length-1 ? new Color(200,60,60) : btnBg);
+            // small icon letter
+            String letter = "";
+            switch (i) {
+                case 0: letter = "R"; break;
+                case 1: letter = "S"; break;
+                case 2: letter = "I"; break;
+                case 3: letter = "O"; break;
+                case 4: letter = "L"; break;
+            }
+            b.setIcon(createIcon(18, new Color(30,90,150), Color.WHITE, letter));
+            b.setHorizontalAlignment(SwingConstants.LEFT);
+            b.setPreferredSize(new Dimension(220, 60));
             menu.add(b);
-            menu.add(Box.createVerticalStrut(8));
         }
 
         checkinPanel = new CheckinPanel(me, roomsPanel);
@@ -76,5 +96,22 @@ public class StaffFrame extends JFrame {
         });
 
         card.show(cardPanel, "rooms");
+    }
+
+    private static ImageIcon createIcon(int size, Color bg, Color fg, String text) {
+        BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(bg);
+        g.fillOval(0, 0, size, size);
+        g.setColor(fg);
+        Font f = new Font("Dialog", Font.BOLD, Math.max(10, size/2));
+        g.setFont(f);
+        FontMetrics fm = g.getFontMetrics();
+        int tx = (size - fm.stringWidth(text)) / 2;
+        int ty = (size - fm.getHeight()) / 2 + fm.getAscent();
+        g.drawString(text, tx, ty);
+        g.dispose();
+        return new ImageIcon(img);
     }
 }

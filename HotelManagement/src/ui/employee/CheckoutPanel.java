@@ -46,14 +46,15 @@ public class CheckoutPanel extends JPanel {
     public CheckoutPanel(Employee me, RoomsPanel roomsPanel) {
         this.me = me;
         this.roomsPanel = roomsPanel;
-
         setLayout(new BorderLayout(10,10));
+        setBackground(new Color(250,250,250));
 
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnReload = new JButton("Reload");
-        JButton btnExtend = new JButton("Gia hạn +1 ngày");
-        JButton btnCalc = new JButton("Tính tiền");
-        JButton btnCheckout = new JButton("Checkout");
+        top.setOpaque(false);
+        JButton btnReload = new JButton("Tải lại"); btnReload.setBackground(new Color(60,130,200)); btnReload.setForeground(Color.WHITE); btnReload.setFocusPainted(false);
+        JButton btnExtend = new JButton("Gia hạn +1 ngày"); btnExtend.setBackground(new Color(100,160,100)); btnExtend.setForeground(Color.WHITE); btnExtend.setFocusPainted(false);
+        JButton btnCalc = new JButton("Tính tiền"); btnCalc.setBackground(new Color(80,120,200)); btnCalc.setForeground(Color.WHITE); btnCalc.setFocusPainted(false);
+        JButton btnCheckout = new JButton("Checkout"); btnCheckout.setBackground(new Color(200,80,60)); btnCheckout.setForeground(Color.WHITE); btnCheckout.setFocusPainted(false);
 
         top.add(btnReload);
         top.add(btnExtend);
@@ -63,9 +64,12 @@ public class CheckoutPanel extends JPanel {
         top.add(btnCheckout);
 
         add(top, BorderLayout.NORTH);
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        JScrollPane sp = new JScrollPane(table);
+        sp.setBackground(Color.WHITE);
+        add(sp, BorderLayout.CENTER);
 
         JPanel info = new JPanel(new GridLayout(0,2,8,6));
+        info.setOpaque(false);
         info.add(new JLabel("Số ngày (ngày tròn):")); info.add(lblDays);
         info.add(new JLabel("Nửa ngày (>=07:00):")); info.add(lblHalf);
 

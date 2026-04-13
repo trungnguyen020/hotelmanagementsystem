@@ -36,10 +36,14 @@ public class ServicesPanel extends JPanel {
 
     public ServicesPanel() {
         setLayout(new BorderLayout(10,10));
+        setBackground(new Color(250,250,250));
 
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnReload = new JButton("Reload");
+        top.setOpaque(false);
+        JButton btnReload = new JButton("Tải lại");
+        btnReload.setBackground(new Color(60,130,200)); btnReload.setForeground(Color.WHITE); btnReload.setFocusPainted(false);
         JButton btnAdd = new JButton("Thêm dịch vụ vào stay");
+        btnAdd.setBackground(new Color(80,160,110)); btnAdd.setForeground(Color.WHITE); btnAdd.setFocusPainted(false);
         top.add(btnReload);
         top.add(new JLabel("Số lượng:"));
         top.add(spnQty);
@@ -48,6 +52,9 @@ public class ServicesPanel extends JPanel {
         top.add(btnAdd);
 
         add(top, BorderLayout.NORTH);
+
+        tblStays.setSelectionBackground(new Color(200,230,255));
+        tblServices.setSelectionBackground(new Color(200,230,255));
 
         JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 new JScrollPane(tblStays),

@@ -27,13 +27,25 @@ public class RoomsPanel extends JPanel {
 
     public RoomsPanel() {
         setLayout(new BorderLayout(10, 10));
+        setBackground(new Color(250, 251, 253));
 
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnRefresh = new JButton("Refresh");
+        top.setOpaque(false);
+        JButton btnRefresh = new JButton("Làm mới");
+        btnRefresh.setBackground(new Color(60,130,200));
+        btnRefresh.setForeground(Color.WHITE);
+        btnRefresh.setFocusPainted(false);
         top.add(btnRefresh);
 
+        // table style
+        table.setFillsViewportHeight(true);
+        table.setSelectionBackground(new Color(200,230,255));
+        table.setGridColor(new Color(230,230,230));
+
         add(top, BorderLayout.NORTH);
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        JScrollPane sp = new JScrollPane(table);
+        sp.setBackground(Color.WHITE);
+        add(sp, BorderLayout.CENTER);
 
         btnRefresh.addActionListener(e -> loadRooms());
 
