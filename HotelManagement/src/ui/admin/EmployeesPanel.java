@@ -22,8 +22,10 @@ public class EmployeesPanel extends JPanel {
     };
 
     private final JTable table = new JTable(model);
+    private final Employee currentAdmin;
 
-    public EmployeesPanel() {
+    public EmployeesPanel(Employee currentAdmin) {
+        this.currentAdmin = currentAdmin;
         setLayout(new BorderLayout(10, 10));
         setBackground(new Color(245, 247, 250)); // Nền sáng hiện đại
         setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -116,6 +118,11 @@ public class EmployeesPanel extends JPanel {
         Employee e = getSelectedEmployee();
         if (e == null) return;
         
+        if (e.getId() == currentAdmin.getId()) {
+             JOptionPane.showMessageDialog(this, "Không thể xóa/ẩn tài khoản mà bạn đang đăng nhập.");
+             return;
+        }
+
         if ("admin".equalsIgnoreCase(e.getUsername())) {
              JOptionPane.showMessageDialog(this, "Không thể xóa/ẩn tài khoản admin gốc.");
              return;
@@ -148,9 +155,19 @@ public class EmployeesPanel extends JPanel {
         JPasswordField txtPass = new JPasswordField();
         JTextField txtName = new JTextField(e != null ? e.getFullName() : "");
         JComboBox<String> cbRole = new JComboBox<>(new String[]{"ADMIN", "STAFF"});
-        if (e != null) cbRole.setSelectedItem(e.getRole().name());
+        if (e != null) {
+            cbRole.setSelectedItem(e.getRole().name());
+            if (e.getId() == currentAdmin.getId()) {
+                cbRole.setEnabled(false);
+            }
+        }
         JComboBox<String> cbStatus = new JComboBox<>(new String[]{"ACTIVE", "INACTIVE"});
-        if (e != null) cbStatus.setSelectedItem(e.getStatus());
+        if (e != null) {
+            cbStatus.setSelectedItem(e.getStatus());
+            if (e.getId() == currentAdmin.getId()) {
+                cbStatus.setEnabled(false);
+            }
+        }
 
         p.add(new JLabel("Tên đăng nhập:")); p.add(txtUser);
         p.add(new JLabel("Mật khẩu" + (e != null ? " (Để trống=Không đổi):" : ":"))); p.add(txtPass);

@@ -1,119 +1,89 @@
 package ui.admin;
 
-import dao.InvoiceDAO;
+import dao.SalaryDAO;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.math.BigDecimal;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
 import java.util.List;
 
-public class RevenuePanel extends JPanel {
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private final JTable table;
+public class SalaryPanel extends JPanel {
+    private static final long serialVersionUID = 1L;
+    private final JTable table;
     private final DefaultTableModel tableModel;
-    private final InvoiceDAO invoiceDAO = new InvoiceDAO();
-    private final JLabel lblTotalRevenue;
+    private final SalaryDAO salaryDAO = new SalaryDAO();
 
-    public RevenuePanel() {
+    public SalaryPanel() {
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        JLabel title = new JLabel("Báo cáo doanh thu & Hóa đơn");
+        JLabel title = new JLabel("Bảng Tính Lương Nhân Viên");
         title.setFont(new Font("Tahoma", Font.BOLD, 18));
         title.setForeground(new Color(30, 60, 90));
         topPanel.add(title, BorderLayout.WEST);
 
-        lblTotalRevenue = new JLabel("Tổng doanh thu: 0 VNĐ");
-        lblTotalRevenue.setFont(new Font("Tahoma", Font.BOLD, 16));
-        lblTotalRevenue.setForeground(new Color(200, 60, 60));
-        topPanel.add(lblTotalRevenue, BorderLayout.EAST);
-        
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        filterPanel.add(new JLabel("Ngày:"));
-        JComboBox<String> cbDay = new JComboBox<>();
-        cbDay.addItem("Tất cả");
-        for (int i=1; i<=31; i++) cbDay.addItem(String.valueOf(i));
-        filterPanel.add(cbDay);
-        
         filterPanel.add(new JLabel("Tháng:"));
         JComboBox<String> cbMonth = new JComboBox<>();
-        cbMonth.addItem("Tất cả");
+        int currentMonth = LocalDate.now().getMonthValue();
         for (int i=1; i<=12; i++) cbMonth.addItem(String.valueOf(i));
+        cbMonth.setSelectedItem(String.valueOf(currentMonth));
         filterPanel.add(cbMonth);
         
         filterPanel.add(new JLabel("Năm:"));
         JComboBox<String> cbYear = new JComboBox<>();
-        cbYear.addItem("Tất cả");
+        int currentYear = LocalDate.now().getYear();
         for (int i=2020; i<=2030; i++) cbYear.addItem(String.valueOf(i));
+        cbYear.setSelectedItem(String.valueOf(currentYear));
         filterPanel.add(cbYear);
         
-        JButton btnFilter = new JButton("Lọc");
+        JButton btnFilter = new JButton("Tính Lương");
         btnFilter.setBackground(new Color(52, 152, 219));
         btnFilter.setForeground(Color.WHITE);
         btnFilter.setFocusPainted(false);
         filterPanel.add(btnFilter);
 
         topPanel.add(filterPanel, BorderLayout.SOUTH);
-        
-        btnFilter.addActionListener(e -> {
-            Integer d = cbDay.getSelectedIndex() > 0 ? Integer.parseInt((String)cbDay.getSelectedItem()) : null;
-            Integer m = cbMonth.getSelectedIndex() > 0 ? Integer.parseInt((String)cbMonth.getSelectedItem()) : null;
-            Integer y = cbYear.getSelectedIndex() > 0 ? Integer.parseInt((String)cbYear.getSelectedItem()) : null;
-            loadData(d, m, y);
-        });
-
         topPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
         add(topPanel, BorderLayout.NORTH);
 
-        String[] cols = {"ID Hóa đơn", "Stay ID", "Người thu", "Tạm tính", "Giảm giá", "Tổng cộng", "Thời gian thanh toán"};
+        String[] cols = {"ID", "Tài khoản", "Họ Tên", "Vai Trò", "Lương CB", "Doanh thu Check-in", "Doanh thu Check-out", "Hoa hồng (7-3)", "Thực lãnh"};
         tableModel = new DefaultTableModel(cols, 0) {
-            /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-
-			@Override
+            private static final long serialVersionUID = 1L;
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
         table = new JTable(tableModel);
-        table.setRowHeight(25);
+        table.setRowHeight(30);
         table.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 12));
 
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
-        JButton btnRefresh = new JButton("Làm mới");
-        JButton btnExport = new JButton("Xuất Excel");
-        
-        btnRefresh.addActionListener(e -> {
-            cbDay.setSelectedIndex(0);
-            cbMonth.setSelectedIndex(0);
-            cbYear.setSelectedIndex(0);
-            loadData(null, null, null);
+        btnFilter.addActionListener(e -> {
+            Integer m = Integer.parseInt((String)cbMonth.getSelectedItem());
+            Integer y = Integer.parseInt((String)cbYear.getSelectedItem());
+            loadData(m, y);
         });
-        
+
+        JButton btnExport = new JButton("Xuất Excel");
         btnExport.addActionListener(e -> exportExcel());
         
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottomPanel.add(btnExport);
-        bottomPanel.add(btnRefresh);
         add(bottomPanel, BorderLayout.SOUTH);
 
-        loadData(null, null, null);
+        loadData(currentMonth, currentYear);
     }
 
     private void exportExcel() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Lưu file báo cáo");
+        fileChooser.setDialogTitle("Lưu file báo cáo lương");
         int userSelection = fileChooser.showSaveDialog(this);
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             java.io.File fileToSave = fileChooser.getSelectedFile();
@@ -122,7 +92,7 @@ public class RevenuePanel extends JPanel {
             
             try (java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.File(path), "UTF-8")) {
                 pw.write('\ufeff'); // BOM cho UTF-8
-                pw.print("\"ID Hóa đơn\",\"Stay ID\",\"Người thu\",\"Tạm tính\",\"Giảm giá\",\"Tổng cộng\",\"Thời gian thanh toán\"\n");
+                pw.print("\"ID\",\"Tài khoản\",\"Họ Tên\",\"Vai Trò\",\"Lương CB\",\"Doanh thu Check-in\",\"Doanh thu Check-out\",\"Hoa hồng (7-3)\",\"Thực lãnh\"\n");
                 
                 for (int i = 0; i < tableModel.getRowCount(); i++) {
                     for (int j = 0; j < tableModel.getColumnCount(); j++) {
@@ -140,29 +110,26 @@ public class RevenuePanel extends JPanel {
         }
     }
 
-    private void loadData(Integer day, Integer month, Integer year) {
+    private void loadData(Integer month, Integer year) {
         tableModel.setRowCount(0);
-        BigDecimal totalRevenue = BigDecimal.ZERO;
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
         try {
-            List<InvoiceDAO.InvoiceView> invoices = invoiceDAO.getFilteredInvoices(day, month, year);
-            for (InvoiceDAO.InvoiceView inv : invoices) {
-                totalRevenue = totalRevenue.add(inv.total != null ? inv.total : BigDecimal.ZERO);
+            List<SalaryDAO.SalaryReportRow> list = salaryDAO.getSalaryReport(month, year);
+            for (SalaryDAO.SalaryReportRow row : list) {
                 tableModel.addRow(new Object[]{
-                        inv.id,
-                        inv.stayId,
-                        inv.paidByName != null ? inv.paidByName : "N/A",
-                        String.format("%,.0f", inv.subtotal),
-                        String.format("%,.0f", inv.discountAmount),
-                        String.format("%,.0f", inv.total),
-                        inv.paidAt.format(dtf)
+                        row.empId,
+                        row.username,
+                        row.fullName,
+                        row.role,
+                        String.format("%,.0f", row.baseSalary),
+                        String.format("%,.0f", row.revenueCheckin),
+                        String.format("%,.0f", row.revenueCheckout),
+                        String.format("%,.0f", row.commission),
+                        String.format("%,.0f", row.totalSalary)
                 });
             }
-            lblTotalRevenue.setText("Tổng doanh thu: " + String.format("%,.0f VNĐ", totalRevenue));
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi tải báo cáo: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Lỗi tính lương: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
