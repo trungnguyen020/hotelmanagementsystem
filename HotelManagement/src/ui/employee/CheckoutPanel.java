@@ -232,7 +232,7 @@ public class CheckoutPanel extends JPanel {
         );
 
         JOptionPane.showMessageDialog(this, "Checkout OK!");
-        roomsPanel.loadRooms();
+        roomsPanel.reload();
         reload();
 
     } catch (Exception ex) {

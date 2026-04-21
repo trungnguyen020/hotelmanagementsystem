@@ -220,7 +220,7 @@ public class CheckinPanel extends JPanel {
 
             JOptionPane.showMessageDialog(this, "Check-in OK. StayID=" + stayId);
 
-            roomsPanel.loadRooms();
+            roomsPanel.reload();
             loadAvailableRooms();
 
             clearForm();

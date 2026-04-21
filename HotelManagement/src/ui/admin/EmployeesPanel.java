@@ -3,6 +3,7 @@ package ui.admin;
 import dao.EmployeeDAO;
 import model.Employee;
 import model.Role;
+import ui.components.PaginationPanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -23,6 +24,7 @@ public class EmployeesPanel extends JPanel {
 
     private final JTable table = new JTable(model);
     private final Employee currentAdmin;
+    private final PaginationPanel paginationPanel;
 
     public EmployeesPanel(Employee currentAdmin) {
         this.currentAdmin = currentAdmin;
@@ -62,11 +64,19 @@ public class EmployeesPanel extends JPanel {
         sp.setBorder(BorderFactory.createLineBorder(new Color(223, 228, 234)));
         sp.getViewport().setBackground(Color.WHITE);
 
-        add(top, BorderLayout.NORTH);
+        paginationPanel = new PaginationPanel((offset, limit, keyword) -> loadData(offset, limit, keyword));
+
+        JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.setOpaque(false);
+        northPanel.add(top, BorderLayout.CENTER);
+        northPanel.add(paginationPanel.getSearchPanel(), BorderLayout.SOUTH);
+
+        add(northPanel, BorderLayout.NORTH);
         add(sp, BorderLayout.CENTER);
+        add(paginationPanel.getPagingPanel(), BorderLayout.SOUTH);
 
         // Actions
-        btnRefresh.addActionListener(e -> loadData());
+        btnRefresh.addActionListener(e -> paginationPanel.reload());
         btnAdd.addActionListener(e -> showForm(null));
         btnEdit.addActionListener(e -> {
             Employee emp = getSelectedEmployee();
@@ -76,7 +86,7 @@ public class EmployeesPanel extends JPanel {
         btnResign.addActionListener(e -> resignSelected());
         btnActivate.addActionListener(e -> activateSelected());
 
-        loadData();
+        loadData(paginationPanel.getOffset(), paginationPanel.getPageSize(), paginationPanel.getKeyword());
     }
 
     private JButton createBtn(String txt, Color bg) {
@@ -90,15 +100,17 @@ public class EmployeesPanel extends JPanel {
         return b;
     }
 
-    private void loadData() {
+    private void loadData(int offset, int limit, String keyword) {
         try {
             model.setRowCount(0);
-            List<Employee> list = employeeDAO.findAllAdmin();
+            List<Employee> list = employeeDAO.findPaginatedAdmin(keyword, offset, limit);
+            int totalCount = employeeDAO.countTotalAdmin(keyword);
             for (Employee e : list) {
                 model.addRow(new Object[]{
                         e.getId(), e.getUsername(), e.getFullName(), e.getRole().name(), e.getStatus()
                 });
             }
+            paginationPanel.updatePagination(totalCount);
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu nhân viên!");
@@ -139,10 +151,10 @@ public class EmployeesPanel extends JPanel {
             try {
                 employeeDAO.deleteOrDeactivate(e.getId());
                 JOptionPane.showMessageDialog(this, "Đã xóa thành công!");
-                loadData();
+                paginationPanel.reload();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Thông báo", JOptionPane.WARNING_MESSAGE);
-                loadData(); 
+                paginationPanel.reload(); 
             }
         }
     }
@@ -171,7 +183,7 @@ public class EmployeesPanel extends JPanel {
             try {
                 employeeDAO.deactivate(e.getId());
                 JOptionPane.showMessageDialog(this, "Đã cập nhật trạng thái nghỉ việc thành công!");
-                loadData();
+                paginationPanel.reload();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
@@ -192,7 +204,7 @@ public class EmployeesPanel extends JPanel {
             try {
                 employeeDAO.activate(e.getId());
                 JOptionPane.showMessageDialog(this, "Đã khôi phục trạng thái đi làm lại thành công!");
-                loadData();
+                paginationPanel.reload();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
@@ -269,7 +281,7 @@ public class EmployeesPanel extends JPanel {
                 }
 
                 dialog.dispose();
-                loadData();
+                paginationPanel.reload();
             } catch (Exception ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(dialog, "Lỗi lưu dữ liệu: " + ex.getMessage());

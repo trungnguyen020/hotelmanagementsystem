@@ -43,32 +43,53 @@ public class EmployeeDAO {
         }
     }
 
-    public List<Employee> findAllAdmin() throws SQLException {
+    public List<Employee> findPaginatedAdmin(String keyword, int offset, int limit) throws SQLException {
         String sql = "SELECT e.id, e.username, e.full_name, r.code AS role_code, es.code AS status_code " +
                 "FROM employees e " +
                 "JOIN roles r ON r.id = e.role_id " +
                 "JOIN employee_status es ON es.id = e.status_id " +
-                "ORDER BY e.created_at DESC";
+                "WHERE e.username LIKE ? OR e.full_name LIKE ? " +
+                "ORDER BY e.created_at DESC LIMIT ? OFFSET ?";
 
         List<Employee> list = new ArrayList<>();
         try (Connection c = DBConnection.getConnection();
-                PreparedStatement ps = c.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = c.prepareStatement(sql)) {
+            
+            String kw = "%" + (keyword == null ? "" : keyword) + "%";
+            ps.setString(1, kw);
+            ps.setString(2, kw);
+            ps.setInt(3, limit);
+            ps.setInt(4, offset);
 
-            while (rs.next()) {
-                Employee e = new Employee();
-                e.setId(rs.getInt("id"));
-                e.setUsername(rs.getString("username"));
-                e.setFullName(rs.getString("full_name"));
-
-                String roleCode = rs.getString("role_code");
-                e.setRole(Role.valueOf(roleCode));
-                e.setStatus(rs.getString("status_code"));
-                
-                list.add(e);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Employee e = new Employee();
+                    e.setId(rs.getInt("id"));
+                    e.setUsername(rs.getString("username"));
+                    e.setFullName(rs.getString("full_name"));
+                    String roleCode = rs.getString("role_code");
+                    e.setRole(Role.valueOf(roleCode));
+                    e.setStatus(rs.getString("status_code"));
+                    list.add(e);
+                }
             }
         }
         return list;
+    }
+
+    public int countTotalAdmin(String keyword) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM employees e " +
+                "WHERE e.username LIKE ? OR e.full_name LIKE ?";
+        try (Connection c = DBConnection.getConnection();
+                PreparedStatement ps = c.prepareStatement(sql)) {
+            String kw = "%" + (keyword == null ? "" : keyword) + "%";
+            ps.setString(1, kw);
+            ps.setString(2, kw);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        return 0;
     }
 
     public void insert(Employee e, String plainPassword) throws SQLException {

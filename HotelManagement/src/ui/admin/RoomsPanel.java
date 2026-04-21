@@ -3,6 +3,7 @@ package ui.admin;
 import dao.RoomDAO;
 import model.RoomType;
 import model.RoomView;
+import ui.components.PaginationPanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -22,6 +23,7 @@ public class RoomsPanel extends JPanel {
     };
 
     private final JTable table = new JTable(model);
+    private final PaginationPanel paginationPanel;
 
     public RoomsPanel() {
         setLayout(new BorderLayout(10, 10));
@@ -53,10 +55,18 @@ public class RoomsPanel extends JPanel {
         sp.setBorder(BorderFactory.createLineBorder(new Color(223, 228, 234)));
         sp.getViewport().setBackground(Color.WHITE);
 
-        add(top, BorderLayout.NORTH);
-        add(sp, BorderLayout.CENTER);
+        paginationPanel = new PaginationPanel((offset, limit, keyword) -> loadData(offset, limit, keyword));
 
-        btnRefresh.addActionListener(e -> loadData());
+        JPanel northPanel = new JPanel(new BorderLayout());
+        northPanel.setOpaque(false);
+        northPanel.add(top, BorderLayout.CENTER);
+        northPanel.add(paginationPanel.getSearchPanel(), BorderLayout.SOUTH);
+
+        add(northPanel, BorderLayout.NORTH);
+        add(sp, BorderLayout.CENTER);
+        add(paginationPanel.getPagingPanel(), BorderLayout.SOUTH);
+
+        btnRefresh.addActionListener(e -> paginationPanel.reload());
         btnAdd.addActionListener(e -> showForm(null));
         btnEdit.addActionListener(e -> {
             RoomView r = getSelectedRoom();
@@ -64,7 +74,7 @@ public class RoomsPanel extends JPanel {
         });
         btnDelete.addActionListener(e -> deleteSelected());
 
-        loadData();
+        loadData(paginationPanel.getOffset(), paginationPanel.getPageSize(), paginationPanel.getKeyword());
     }
 
     private JButton createBtn(String txt, Color bg) {
@@ -78,15 +88,17 @@ public class RoomsPanel extends JPanel {
         return b;
     }
 
-    private void loadData() {
+    private void loadData(int offset, int limit, String keyword) {
         try {
             model.setRowCount(0);
-            List<RoomView> list = roomDAO.findAll();
+            List<RoomView> list = roomDAO.findPaginated(keyword, offset, limit);
+            int totalCount = roomDAO.countTotal(keyword);
             for (RoomView r : list) {
                 model.addRow(new Object[]{
                         r.getRoomId(), r.getRoomNumber(), r.getRoomType(), r.getPricePerNight(), r.getStatus()
                 });
             }
+            paginationPanel.updatePagination(totalCount);
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu phòng!");
@@ -116,10 +128,10 @@ public class RoomsPanel extends JPanel {
             try {
                 roomDAO.deleteOrHide(r.getRoomId());
                 JOptionPane.showMessageDialog(this, "Đã xóa phòng thành công!");
-                loadData();
+                paginationPanel.reload();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Thông báo", JOptionPane.WARNING_MESSAGE);
-                loadData();
+                paginationPanel.reload();
             }
         }
     }
@@ -181,7 +193,7 @@ public class RoomsPanel extends JPanel {
                 }
 
                 dialog.dispose();
-                loadData();
+                paginationPanel.reload();
             } catch (Exception ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(dialog, "Lỗi lưu dữ liệu: " + ex.getMessage());

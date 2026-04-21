@@ -56,6 +56,52 @@ public class RoomDAO {
         return list;
     }
 
+    public List<RoomView> findPaginated(String keyword, int offset, int limit) throws SQLException {
+        String sql =
+            "SELECT r.id AS room_id, r.room_number, rt.name AS room_type, rt.price_per_night, rs.code AS status_code " +
+            "FROM rooms r " +
+            "JOIN room_types rt ON rt.id = r.room_type_id " +
+            "JOIN room_status rs ON rs.id = r.status_id " +
+            "WHERE r.room_number LIKE ? " +
+            "ORDER BY r.room_number LIMIT ? OFFSET ?";
+
+        List<RoomView> list = new ArrayList<>();
+
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            String kw = "%" + (keyword == null ? "" : keyword) + "%";
+            ps.setString(1, kw);
+            ps.setInt(2, limit);
+            ps.setInt(3, offset);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    RoomView v = new RoomView();
+                    v.setRoomId(rs.getInt("room_id"));
+                    v.setRoomNumber(rs.getString("room_number"));
+                    v.setRoomType(rs.getString("room_type"));
+                    v.setPricePerNight(rs.getBigDecimal("price_per_night"));
+                    v.setStatus(rs.getString("status_code"));
+                    list.add(v);
+                }
+            }
+        }
+        return list;
+    }
+
+    public int countTotal(String keyword) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM rooms r WHERE r.room_number LIKE ?";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            String kw = "%" + (keyword == null ? "" : keyword) + "%";
+            ps.setString(1, kw);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
     public void insert(String roomNumber, int roomTypeId, String statusCode, String note) throws SQLException {
         String sql = "INSERT INTO rooms(room_number, room_type_id, status_id, note) " +
                      "SELECT ?, ?, id, ? FROM room_status WHERE code = ?";
