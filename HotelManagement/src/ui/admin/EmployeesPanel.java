@@ -36,11 +36,15 @@ public class EmployeesPanel extends JPanel {
 
         JButton btnAdd = createBtn("Thêm mới", new Color(46, 204, 113));
         JButton btnEdit = createBtn("Sửa thông tin", new Color(52, 152, 219));
-        JButton btnDelete = createBtn("Xoá / Ẩn", new Color(231, 76, 60));
+        JButton btnDelete = createBtn("Xoá", new Color(231, 76, 60));
+        JButton btnResign = createBtn("Nghỉ việc", new Color(230, 126, 34)); // Orange for deactivate
+        JButton btnActivate = createBtn("Làm việc lại", new Color(155, 89, 182)); // Purple for activate
         JButton btnRefresh = createBtn("Làm mới", new Color(149, 165, 166));
 
         top.add(btnAdd);
         top.add(btnEdit);
+        top.add(btnResign);
+        top.add(btnActivate);
         top.add(btnDelete);
         top.add(btnRefresh);
 
@@ -69,6 +73,8 @@ public class EmployeesPanel extends JPanel {
             if (emp != null) showForm(emp);
         });
         btnDelete.addActionListener(e -> deleteSelected());
+        btnResign.addActionListener(e -> resignSelected());
+        btnActivate.addActionListener(e -> activateSelected());
 
         loadData();
     }
@@ -119,16 +125,16 @@ public class EmployeesPanel extends JPanel {
         if (e == null) return;
         
         if (e.getId() == currentAdmin.getId()) {
-             JOptionPane.showMessageDialog(this, "Không thể xóa/ẩn tài khoản mà bạn đang đăng nhập.");
+             JOptionPane.showMessageDialog(this, "Không thể xóa tài khoản mà bạn đang đăng nhập.");
              return;
         }
 
         if ("admin".equalsIgnoreCase(e.getUsername())) {
-             JOptionPane.showMessageDialog(this, "Không thể xóa/ẩn tài khoản admin gốc.");
+             JOptionPane.showMessageDialog(this, "Không thể xóa tài khoản admin gốc.");
              return;
         }
 
-        int ans = JOptionPane.showConfirmDialog(this, "Bạn có muốn xóa nhân viên '" + e.getFullName() + "'?\n(Nếu nhân viên đã có báo cáo, hệ thống sẽ tự động đổi trạng thái thành INACTIVE).", "Xác nhận", JOptionPane.YES_NO_OPTION);
+        int ans = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa hẳn nhân viên '" + e.getFullName() + "' khỏi hệ thống?", "Xác nhận xóa cứng", JOptionPane.YES_NO_OPTION);
         if (ans == JOptionPane.YES_OPTION) {
             try {
                 employeeDAO.deleteOrDeactivate(e.getId());
@@ -136,7 +142,59 @@ public class EmployeesPanel extends JPanel {
                 loadData();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Thông báo", JOptionPane.WARNING_MESSAGE);
-                loadData(); // Reload to see inactive status
+                loadData(); 
+            }
+        }
+    }
+
+    private void resignSelected() {
+        Employee e = getSelectedEmployee();
+        if (e == null) return;
+
+        if (e.getId() == currentAdmin.getId()) {
+             JOptionPane.showMessageDialog(this, "Không thể cho tài khoản bạn đang đăng nhập nghỉ việc.");
+             return;
+        }
+
+        if ("admin".equalsIgnoreCase(e.getUsername())) {
+             JOptionPane.showMessageDialog(this, "Không thể cho tài khoản admin gốc nghỉ việc.");
+             return;
+        }
+
+        if ("INACTIVE".equals(e.getStatus())) {
+             JOptionPane.showMessageDialog(this, "Nhân viên này đã nghỉ việc rổi.");
+             return;
+        }
+
+        int ans = JOptionPane.showConfirmDialog(this, "Xác nhận cho nhân viên '" + e.getFullName() + "' nghỉ việc (đổi trạng thái thành INACTIVE)?", "Cho nghỉ việc", JOptionPane.YES_NO_OPTION);
+        if (ans == JOptionPane.YES_OPTION) {
+            try {
+                employeeDAO.deactivate(e.getId());
+                JOptionPane.showMessageDialog(this, "Đã cập nhật trạng thái nghỉ việc thành công!");
+                loadData();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void activateSelected() {
+        Employee e = getSelectedEmployee();
+        if (e == null) return;
+
+        if ("ACTIVE".equals(e.getStatus())) {
+             JOptionPane.showMessageDialog(this, "Nhân viên này đang ở trạng thái làm việc rồi.");
+             return;
+        }
+
+        int ans = JOptionPane.showConfirmDialog(this, "Xác nhận cho nhân viên '" + e.getFullName() + "' đi làm lại (đổi trạng thái thành ACTIVE)?", "Làm việc lại", JOptionPane.YES_NO_OPTION);
+        if (ans == JOptionPane.YES_OPTION) {
+            try {
+                employeeDAO.activate(e.getId());
+                JOptionPane.showMessageDialog(this, "Đã khôi phục trạng thái đi làm lại thành công!");
+                loadData();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
