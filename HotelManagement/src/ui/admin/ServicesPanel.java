@@ -25,7 +25,7 @@ public class ServicesPanel extends JPanel {
 
     public ServicesPanel() {
         setLayout(new BorderLayout(10, 10));
-        setBackground(new Color(245, 247, 250)); // Nền sáng
+        setBackground(Color.WHITE);
         setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));

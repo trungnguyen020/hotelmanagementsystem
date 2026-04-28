@@ -9,7 +9,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.geom.Path2D;
-import java.awt.geom.RoundRectangle2D;
 
 public class LoginFrame extends JFrame {
 

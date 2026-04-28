@@ -47,7 +47,7 @@ public class CheckinPanel extends JPanel {
         this.roomsPanel = roomsPanel;
 
         setLayout(new BorderLayout(10, 10));
-        setBackground(new Color(250,250,252));
+        setBackground(Color.WHITE);
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setOpaque(false);

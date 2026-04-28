@@ -9,17 +9,20 @@ import java.awt.image.BufferedImage;
 
 public class StaffFrame extends JFrame {
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private final CardLayout card = new CardLayout();
+    private static final long serialVersionUID = 1L;
+    private final CardLayout card = new CardLayout();
     private final JPanel cardPanel = new JPanel(card);
 
     private final RoomsPanel roomsPanel = new RoomsPanel();
     private final ServicesPanel servicesPanel = new ServicesPanel();
     private final CheckinPanel checkinPanel;
     private final CheckoutPanel checkoutPanel;
+
+    private boolean isExpanded = true;
+    private JPanel sidebar;
+    private JLabel lblLogo;
+    private JButton[] menuButtons;
+    private String[] menuTexts;
 
     public StaffFrame(Employee me) {
         setTitle("Nhân viên - Hotel Management | " + me.getFullName());
@@ -28,69 +31,124 @@ public class StaffFrame extends JFrame {
         setLocationRelativeTo(null);
 
         JPanel root = new JPanel(new BorderLayout());
-        root.setBorder(new EmptyBorder(10, 10, 10, 10));
         root.setBackground(new Color(250, 251, 253));
         setContentPane(root);
 
-        JLabel top = new JLabel("NHÂN VIÊN  |  " + me.getFullName() + " (" + me.getRole() + ")");
-        top.setFont(new Font("Tahoma", Font.BOLD, 14));
-        top.setForeground(new Color(30,60,90));
-        root.add(top, BorderLayout.NORTH);
+        // --- Sidebar ---
+        sidebar = new JPanel(new BorderLayout());
+        sidebar.setBackground(new Color(21, 18, 31)); // Dark background
+        sidebar.setPreferredSize(new Dimension(220, 0));
+        root.add(sidebar, BorderLayout.WEST);
 
-        JPanel menu = new JPanel();
-        // Use GridLayout so buttons stretch vertically to fill the left area
-        menu.setLayout(new GridLayout(0, 1, 0, 8));
-        menu.setBorder(new EmptyBorder(0, 0, 0, 10));
-        menu.setBackground(new Color(235,240,245));
-        root.add(menu, BorderLayout.WEST);
+        // Sidebar Top
+        JPanel sidebarTop = new JPanel(new BorderLayout());
+        sidebarTop.setOpaque(false);
+        sidebarTop.setBorder(new EmptyBorder(15, 10, 15, 10));
 
-        JButton btnRooms = new JButton("Quản lý phòng");
-        JButton btnServices = new JButton("Quản lý dịch vụ");
-        JButton btnCheckin = new JButton("Check-in");
-        JButton btnCheckout = new JButton("Check-out");
-        JButton btnLogout = new JButton("Đăng xuất");
+        lblLogo = new JLabel("HOTEL");
+        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblLogo.setForeground(Color.WHITE);
+        lblLogo.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Style buttons: add icons, colors and larger size
-        JButton[] buttons = new JButton[]{btnRooms, btnServices, btnCheckin, btnCheckout, btnLogout};
-        Color btnBg = new Color(60,130,200);
-        for (int i = 0; i < buttons.length; i++) {
-            JButton b = buttons[i];
+        JButton btnToggle = new JButton("≡");
+        btnToggle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        btnToggle.setForeground(Color.WHITE);
+        btnToggle.setBackground(new Color(21, 18, 31));
+        btnToggle.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        btnToggle.setFocusPainted(false);
+        btnToggle.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        sidebarTop.add(lblLogo, BorderLayout.CENTER);
+        sidebarTop.add(btnToggle, BorderLayout.EAST);
+        sidebar.add(sidebarTop, BorderLayout.NORTH);
+
+        // Sidebar Menu
+        JPanel menu = new JPanel(new GridLayout(0, 1, 0, 0));
+        menu.setOpaque(false);
+
+        JPanel menuContainer = new JPanel(new BorderLayout());
+        menuContainer.setOpaque(false);
+        menuContainer.add(menu, BorderLayout.NORTH);
+        sidebar.add(menuContainer, BorderLayout.CENTER);
+
+        menuTexts = new String[] {
+                " Quản lý phòng", " Quản lý dịch vụ", " Check-in", " Check-out", " Đăng xuất"
+        };
+        menuButtons = new JButton[5];
+        String[] letters = { "R", "S", "I", "O", "L" };
+        Color btnBg = new Color(21, 18, 31);
+        Color hoverBg = new Color(40, 36, 56);
+
+        for (int i = 0; i < menuButtons.length; i++) {
+            JButton b = new JButton(menuTexts[i]);
             b.setFocusPainted(false);
             b.setForeground(Color.WHITE);
-            b.setBackground(i == buttons.length-1 ? new Color(200,60,60) : btnBg);
-            // small icon letter
-            String letter = "";
-            switch (i) {
-                case 0: letter = "R"; break;
-                case 1: letter = "S"; break;
-                case 2: letter = "I"; break;
-                case 3: letter = "O"; break;
-                case 4: letter = "L"; break;
-            }
-            b.setIcon(createIcon(18, new Color(30,90,150), Color.WHITE, letter));
+            b.setBackground(btnBg);
+            b.setBorder(new EmptyBorder(15, 15, 15, 15));
+            b.setIcon(createIcon(20, new Color(88, 77, 184), Color.WHITE, letters[i]));
             b.setHorizontalAlignment(SwingConstants.LEFT);
-            b.setPreferredSize(new Dimension(220, 60));
+            b.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            // Hover effect
+            b.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    b.setBackground(hoverBg);
+                }
+
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    b.setBackground(btnBg);
+                }
+            });
+
+            menuButtons[i] = b;
             menu.add(b);
         }
 
         checkinPanel = new CheckinPanel(me, roomsPanel);
         checkoutPanel = new CheckoutPanel(me, roomsPanel);
 
+        // --- Main Area ---
+        JPanel mainArea = new JPanel(new BorderLayout());
+        mainArea.setOpaque(false);
+        root.add(mainArea, BorderLayout.CENTER);
+
+        // Top Bar
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(Color.WHITE);
+        topBar.setBorder(new EmptyBorder(15, 20, 15, 20));
+        JLabel top = new JLabel("NHÂN VIÊN  |  " + me.getFullName() + " (" + me.getRole() + ")");
+        top.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        top.setForeground(new Color(50, 50, 50));
+        topBar.add(top, BorderLayout.WEST);
+        mainArea.add(topBar, BorderLayout.NORTH);
+
+        // Cards Container
+        cardPanel.setOpaque(false);
+        cardPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         cardPanel.add(roomsPanel, "rooms");
         cardPanel.add(servicesPanel, "services");
         cardPanel.add(checkinPanel, "checkin");
         cardPanel.add(checkoutPanel, "checkout");
-        root.add(cardPanel, BorderLayout.CENTER);
+        mainArea.add(cardPanel, BorderLayout.CENTER);
 
-        btnRooms.addActionListener(e -> { roomsPanel.reload(); card.show(cardPanel, "rooms"); });
-        btnServices.addActionListener(e -> {
+        // Actions
+        btnToggle.addActionListener(e -> toggleSidebar());
+
+        menuButtons[0].addActionListener(e -> {
+            roomsPanel.reload();
+            card.show(cardPanel, "rooms");
+        });
+        menuButtons[1].addActionListener(e -> {
             servicesPanel.reload();
             card.show(cardPanel, "services");
         });
-        btnCheckin.addActionListener(e -> card.show(cardPanel, "checkin"));
-        btnCheckout.addActionListener(e -> { checkoutPanel.reload(); card.show(cardPanel, "checkout"); });
-
-        btnLogout.addActionListener(e -> {
+        menuButtons[2].addActionListener(e -> card.show(cardPanel, "checkin"));
+        menuButtons[3].addActionListener(e -> {
+            checkoutPanel.reload();
+            card.show(cardPanel, "checkout");
+        });
+        menuButtons[4].addActionListener(e -> {
             dispose();
             new ui.auth.LoginFrame().setVisible(true);
         });
@@ -98,14 +156,33 @@ public class StaffFrame extends JFrame {
         card.show(cardPanel, "rooms");
     }
 
+    private void toggleSidebar() {
+        isExpanded = !isExpanded;
+        if (isExpanded) {
+            sidebar.setPreferredSize(new Dimension(220, 0));
+            lblLogo.setVisible(true);
+            for (int i = 0; i < menuButtons.length; i++) {
+                menuButtons[i].setText(menuTexts[i]);
+            }
+        } else {
+            sidebar.setPreferredSize(new Dimension(60, 0));
+            lblLogo.setVisible(false);
+            for (int i = 0; i < menuButtons.length; i++) {
+                menuButtons[i].setText("");
+            }
+        }
+        sidebar.revalidate();
+        sidebar.repaint();
+    }
+
     private static ImageIcon createIcon(int size, Color bg, Color fg, String text) {
         BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();
         g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
         g.setColor(bg);
-        g.fillOval(0, 0, size, size);
+        g.fillRoundRect(0, 0, size, size, 8, 8); // slightly rounded icon
         g.setColor(fg);
-        Font f = new Font("Dialog", Font.BOLD, Math.max(10, size/2));
+        Font f = new Font("Segoe UI", Font.BOLD, Math.max(10, size / 2));
         g.setFont(f);
         FontMetrics fm = g.getFontMetrics();
         int tx = (size - fm.stringWidth(text)) / 2;

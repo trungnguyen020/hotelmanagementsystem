@@ -22,6 +22,7 @@ public class RevenuePanel extends JPanel {
 
     public RevenuePanel() {
         setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
         setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel topPanel = new JPanel(new BorderLayout());

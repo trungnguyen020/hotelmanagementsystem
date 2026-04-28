@@ -17,6 +17,7 @@ public class SalaryPanel extends JPanel {
 
     public SalaryPanel() {
         setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
         setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel topPanel = new JPanel(new BorderLayout());

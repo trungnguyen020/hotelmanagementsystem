@@ -29,7 +29,7 @@ public class EmployeesPanel extends JPanel {
     public EmployeesPanel(Employee currentAdmin) {
         this.currentAdmin = currentAdmin;
         setLayout(new BorderLayout(10, 10));
-        setBackground(new Color(245, 247, 250)); // Nền sáng hiện đại
+        setBackground(Color.WHITE);
         setBorder(new EmptyBorder(10, 10, 10, 10));
 
         // Top bar

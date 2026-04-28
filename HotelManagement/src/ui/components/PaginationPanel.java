@@ -8,7 +8,6 @@ public class PaginationPanel {
 
     private int currentPage = 1;
     private int pageSize = 20;
-    private int totalRecords = 0;
     private int totalPages = 1;
 
     private JTextField txtSearch;
@@ -121,7 +120,6 @@ public class PaginationPanel {
     }
 
     public void updatePagination(int totalRecords) {
-        this.totalRecords = totalRecords;
         this.totalPages = (int) Math.ceil((double) totalRecords / pageSize);
         if (this.totalPages == 0) this.totalPages = 1;
         if (this.currentPage > this.totalPages) {

@@ -36,7 +36,7 @@ public class ServicesPanel extends JPanel {
 
     public ServicesPanel() {
         setLayout(new BorderLayout(10,10));
-        setBackground(new Color(250,250,250));
+        setBackground(Color.WHITE);
 
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
         top.setOpaque(false);
