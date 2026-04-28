@@ -6,19 +6,16 @@ import model.Role;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-
 import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.awt.geom.Path2D;
+import java.awt.geom.RoundRectangle2D;
 
 public class LoginFrame extends JFrame {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
-    private final JTextField txtUsername = new JTextField(20);
-    private final JPasswordField txtPassword = new JPasswordField(20);
+    private final JTextField txtUsername = new JTextField();
+    private final JPasswordField txtPassword = new JPasswordField();
 
     private final JButton btnLogin = new JButton("Đăng nhập");
     private final JButton btnExit = new JButton("Thoát");
@@ -28,91 +25,150 @@ public class LoginFrame extends JFrame {
     public LoginFrame() {
         setTitle("Hotel Management - Login");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(460, 260);
+        setSize(800, 500);
         setLocationRelativeTo(null);
-
-        // Root panel with nicer background
-        JPanel root = new JPanel(new BorderLayout(12, 12));
-        root.setBorder(new EmptyBorder(14, 14, 14, 14));
-        root.setBackground(new Color(245, 247, 250));
+        
+        JPanel root = new JPanel(new GridLayout(1, 2));
+        root.setBackground(Color.WHITE);
         setContentPane(root);
 
-        // Title area
-        JLabel lblTitle = new JLabel("HỆ THỐNG QUẢN LÝ KHÁCH SẠN", SwingConstants.CENTER);
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblTitle.setForeground(new Color(30, 60, 90));
-        root.add(lblTitle, BorderLayout.NORTH);
+        // --- Left Panel ---
+        JPanel leftPanel = new JPanel();
+        leftPanel.setBackground(Color.WHITE);
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.setBorder(new EmptyBorder(80, 50, 80, 50));
 
-        // Left icon panel
-        JLabel bigIcon = new JLabel(createIcon(64, new Color(60, 130, 200), Color.WHITE, "person"));
-        bigIcon.setBorder(new EmptyBorder(6, 6, 6, 12));
-        JPanel left = new JPanel(new BorderLayout());
-        left.setOpaque(false);
-        left.add(bigIcon, BorderLayout.NORTH);
-        root.add(left, BorderLayout.WEST);
+        JLabel lblTitle = new JLabel("Sign In");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 36));
+        lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        leftPanel.add(Box.createVerticalGlue());
+        leftPanel.add(lblTitle);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 40)));
 
-        JPanel form = new JPanel(new GridBagLayout());
-        form.setOpaque(false);
-        root.add(form, BorderLayout.CENTER);
+        // Form Fields
+        JPanel formPan = new JPanel();
+        formPan.setLayout(new BoxLayout(formPan, BoxLayout.Y_AXIS));
+        formPan.setBackground(Color.WHITE);
+        
+        JLabel lblUser = new JLabel("Username");
+        lblUser.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblUser.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        txtUsername.setMaximumSize(new Dimension(250, 40));
+        txtUsername.setPreferredSize(new Dimension(250, 40));
+        txtUsername.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(new Color(230, 230, 230), 1, true),
+            new EmptyBorder(5, 10, 5, 10)
+        ));
+        txtUsername.setBackground(new Color(245, 245, 245));
+        
+        JLabel lblPass = new JLabel("Password");
+        lblPass.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblPass.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        txtPassword.setMaximumSize(new Dimension(250, 40));
+        txtPassword.setPreferredSize(new Dimension(250, 40));
+        txtPassword.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(new Color(230, 230, 230), 1, true),
+            new EmptyBorder(5, 10, 5, 10)
+        ));
+        txtPassword.setBackground(new Color(245, 245, 245));
 
-        // Username label + field with small icon
-        GridBagConstraints c1 = new GridBagConstraints();
-        c1.insets = new Insets(6, 6, 6, 6);
-        c1.anchor = GridBagConstraints.LINE_END;
-        c1.gridx = 0;
-        c1.gridy = 0;
-        JLabel lblUser = new JLabel("Username:");
-        lblUser.setIcon(createIcon(18, new Color(70, 130, 180), Color.WHITE, "person"));
-        form.add(lblUser, c1);
+        formPan.add(lblUser);
+        formPan.add(Box.createRigidArea(new Dimension(0, 5)));
+        formPan.add(txtUsername);
+        formPan.add(Box.createRigidArea(new Dimension(0, 15)));
+        formPan.add(lblPass);
+        formPan.add(Box.createRigidArea(new Dimension(0, 5)));
+        formPan.add(txtPassword);
 
-        GridBagConstraints c2 = new GridBagConstraints();
-        c2.insets = new Insets(6, 6, 6, 6);
-        c2.fill = GridBagConstraints.HORIZONTAL;
-        c2.weightx = 1.0;
-        c2.gridx = 1;
-        c2.gridy = 0;
-        txtUsername.setBorder(new LineBorder(new Color(210, 210, 210), 1));
-        form.add(txtUsername, c2);
+        leftPanel.add(formPan);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 30)));
 
-        // Password label + field with small icon
-        GridBagConstraints c3 = new GridBagConstraints();
-        c3.insets = new Insets(6, 6, 6, 6);
-        c3.anchor = GridBagConstraints.LINE_END;
-        c3.gridx = 0;
-        c3.gridy = 1;
-        JLabel lblPass = new JLabel("Password:");
-        lblPass.setIcon(createIcon(18, new Color(100, 160, 90), Color.WHITE, "key"));
-        form.add(lblPass, c3);
+        // Buttons Panel
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        btnPanel.setOpaque(false);
+        btnPanel.setMaximumSize(new Dimension(260, 40));
 
-        GridBagConstraints c4 = new GridBagConstraints();
-        c4.insets = new Insets(6, 6, 6, 6);
-        c4.fill = GridBagConstraints.HORIZONTAL;
-        c4.weightx = 1.0;
-        c4.gridx = 1;
-        c4.gridy = 1;
-        txtPassword.setBorder(new LineBorder(new Color(210, 210, 210), 1));
-        form.add(txtPassword, c4);
-
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
-        buttons.setOpaque(false);
-        btnLogin.setBackground(new Color(60, 130, 200));
+        btnLogin.setPreferredSize(new Dimension(120, 40));
+        btnLogin.setBackground(new Color(88, 77, 184));
         btnLogin.setForeground(Color.WHITE);
+        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnLogin.setFocusPainted(false);
-        btnLogin.setIcon(createIcon(18, new Color(30, 90, 150), Color.WHITE, "power"));
+        btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLogin.setBorder(BorderFactory.createEmptyBorder());
 
-        btnExit.setBackground(new Color(200, 60, 60));
+        btnExit.setPreferredSize(new Dimension(120, 40));
+        btnExit.setBackground(new Color(200, 60, 60)); // Red exit button
         btnExit.setForeground(Color.WHITE);
+        btnExit.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnExit.setFocusPainted(false);
-        btnExit.setIcon(createIcon(16, new Color(160, 40, 40), Color.WHITE, "X"));
+        btnExit.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnExit.setBorder(BorderFactory.createEmptyBorder());
 
-        buttons.add(btnLogin);
-        buttons.add(btnExit);
-        root.add(buttons, BorderLayout.SOUTH);
+        btnPanel.add(btnLogin);
+        btnPanel.add(btnExit);
 
-        btnExit.addActionListener(e -> System.exit(0));
+        leftPanel.add(btnPanel);
+        leftPanel.add(Box.createVerticalGlue());
+        
+        root.add(leftPanel);
+
+        // --- Right Panel ---
+        JPanel rightPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                int w = getWidth();
+                int h = getHeight();
+                
+                g2.setColor(new Color(88, 77, 184)); // Match the purple in the image
+                Path2D path = new Path2D.Float();
+                int curveRadius = 150;
+                
+                path.moveTo(w, 0);
+                path.lineTo(curveRadius, 0);
+                // Top-left curve
+                path.quadTo(0, 0, 0, curveRadius);
+                path.lineTo(0, h - curveRadius);
+                // Bottom-left curve
+                path.quadTo(0, h, curveRadius, h);
+                path.lineTo(w, h);
+                path.closePath();
+                
+                g2.fill(path);
+            }
+        };
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+        rightPanel.setBackground(Color.WHITE);
+        rightPanel.setBorder(new EmptyBorder(0, 20, 0, 0)); // space for text not to hit the left curve
+
+        rightPanel.add(Box.createVerticalGlue());
+        
+        JLabel lblWelcome = new JLabel("Welcome Hotel");
+        lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 36));
+        lblWelcome.setForeground(Color.WHITE);
+        lblWelcome.setAlignmentX(Component.CENTER_ALIGNMENT);
+        rightPanel.add(lblWelcome);
+        
+        rightPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        
+        JLabel lblSub = new JLabel("chúc bạn có 1 ngày tốt lành");
+        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        lblSub.setForeground(Color.WHITE);
+        lblSub.setAlignmentX(Component.CENTER_ALIGNMENT);
+        rightPanel.add(lblSub);
+        
+        rightPanel.add(Box.createVerticalGlue());
+
+        root.add(rightPanel);
+
         btnLogin.addActionListener(e -> doLogin());
-
-        // Nhấn Enter để login
+        btnExit.addActionListener(e -> System.exit(0));
         getRootPane().setDefaultButton(btnLogin);
     }
 
@@ -147,57 +203,5 @@ public class LoginFrame extends JFrame {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi DB/Driver. Xem Console để biết chi tiết!");
         }
-    }
-
-    // Simple helper to create a circular icon with a center letter.
-    private static ImageIcon createIcon(int size, Color bg, Color fg, String text) {
-        BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = img.createGraphics();
-        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-        // background circle
-        g.setColor(bg);
-        g.fillOval(0, 0, size, size);
-        g.setColor(fg);
-
-        if ("person".equalsIgnoreCase(text)) {
-            // draw a simple person silhouette: head + body
-            int headR = size / 3;
-            int hx = size / 2 - headR / 2;
-            int hy = size / 6;
-            g.fillOval(hx, hy, headR, headR);
-            int bodyW = size / 2;
-            int bodyH = size / 3;
-            int bx = size / 2 - bodyW / 2;
-            int by = hy + headR + 2;
-            g.fillRoundRect(bx, by, bodyW, bodyH, bodyW / 4, bodyW / 4);
-        } else if ("key".equalsIgnoreCase(text)) {
-            // draw a simple key
-            int y = size / 2;
-            g.fillRect(size / 6, y - 3, size / 2, 6);
-            g.fillOval(size / 10, y - 6, size / 3, size / 3);
-            // teeth
-            int tx = size / 6 + size / 2;
-            g.fillRect(tx, y - 6, 6, 6);
-            g.fillRect(tx + 6, y - 2, 6, 6);
-        } else if ("power".equalsIgnoreCase(text)) {
-            // power icon: circle with vertical line
-            Stroke old = g.getStroke();
-            g.setStroke(new BasicStroke(Math.max(2, size / 12f), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            int pad = Math.max(2, size / 8);
-            g.drawOval(pad, pad, size - 2 * pad, size - 2 * pad);
-            g.drawLine(size / 2, pad / 2, size / 2, size / 2 + 2);
-            g.setStroke(old);
-        } else {
-            // fallback: letter
-            Font f = new Font("Dialog", Font.BOLD, Math.max(10, size / 2));
-            g.setFont(f);
-            FontMetrics fm = g.getFontMetrics();
-            int tx = (size - fm.stringWidth(text)) / 2;
-            int ty = (size - fm.getHeight()) / 2 + fm.getAscent();
-            g.drawString(text, tx, ty);
-        }
-
-        g.dispose();
-        return new ImageIcon(img);
     }
 }
