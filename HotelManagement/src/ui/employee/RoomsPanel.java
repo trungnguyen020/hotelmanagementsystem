@@ -41,8 +41,15 @@ public class RoomsPanel extends JPanel {
 
         // table style
         table.setFillsViewportHeight(true);
-        table.setSelectionBackground(new Color(200,230,255));
-        table.setGridColor(new Color(230,230,230));
+        table.setRowHeight(40);
+        table.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        table.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 14));
+        table.getTableHeader().setBackground(new Color(250, 250, 250));
+        table.getTableHeader().setBorder(BorderFactory.createEmptyBorder());
+        table.setSelectionBackground(new Color(235, 245, 255));
+        table.setShowVerticalLines(false);
+        table.setShowHorizontalLines(true);
+        table.setGridColor(new Color(230, 230, 230));
 
         paginationPanel = new PaginationPanel((offset, limit, keyword) -> loadRooms(offset, limit, keyword));
 

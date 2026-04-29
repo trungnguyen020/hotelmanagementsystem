@@ -17,9 +17,11 @@ public class EmployeesPanel extends JPanel {
     private final EmployeeDAO employeeDAO = new EmployeeDAO();
 
     private final DefaultTableModel model = new DefaultTableModel(
-            new Object[]{"ID", "Username", "Họ tên", "Vai trò", "Trạng thái"}, 0
+            new Object[]{"ID", "Username", "Họ tên", "Vai trò", "Trạng thái", "Thao tác"}, 0
     ) {
-        @Override public boolean isCellEditable(int row, int column) { return false; }
+        @Override public boolean isCellEditable(int row, int column) { 
+            return column == 5; // Only action column is editable
+        }
     };
 
     private final JTable table = new JTable(model);
@@ -37,31 +39,52 @@ public class EmployeesPanel extends JPanel {
         top.setOpaque(false);
 
         JButton btnAdd = createBtn("Thêm mới", new Color(46, 204, 113));
-        JButton btnEdit = createBtn("Sửa thông tin", new Color(52, 152, 219));
-        JButton btnDelete = createBtn("Xoá", new Color(231, 76, 60));
         JButton btnResign = createBtn("Nghỉ việc", new Color(230, 126, 34)); // Orange for deactivate
         JButton btnActivate = createBtn("Làm việc lại", new Color(155, 89, 182)); // Purple for activate
         JButton btnRefresh = createBtn("Làm mới", new Color(149, 165, 166));
 
         top.add(btnAdd);
-        top.add(btnEdit);
         top.add(btnResign);
         top.add(btnActivate);
-        top.add(btnDelete);
         top.add(btnRefresh);
 
         // Styling the table
+        // Styling the table
         table.setFillsViewportHeight(true);
-        table.setRowHeight(30);
+        table.setRowHeight(40);
         table.setFont(new Font("Tahoma", Font.PLAIN, 14));
         table.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 14));
-        table.getTableHeader().setBackground(new Color(236, 240, 241));
-        table.setSelectionBackground(new Color(189, 195, 199));
-        table.setShowGrid(false);
-        table.setIntercellSpacing(new Dimension(0, 0));
+        table.getTableHeader().setBackground(new Color(250, 250, 250));
+        table.getTableHeader().setBorder(BorderFactory.createEmptyBorder());
+        table.setSelectionBackground(new Color(235, 245, 255));
+        table.setShowVerticalLines(false);
+        table.setShowHorizontalLines(true);
+        table.setGridColor(new Color(230, 230, 230));
+
+        // Action column
+        ui.components.TableActionEvent event = new ui.components.TableActionEvent() {
+            @Override
+            public void onEdit(int row) {
+                if (table.isEditing()) {
+                    table.getCellEditor().stopCellEditing();
+                }
+                Employee emp = getEmployeeAt(row);
+                if (emp != null) showForm(emp);
+            }
+
+            @Override
+            public void onDelete(int row) {
+                if (table.isEditing()) {
+                    table.getCellEditor().stopCellEditing();
+                }
+                deleteEmployeeAt(row);
+            }
+        };
+        table.getColumnModel().getColumn(5).setCellRenderer(new ui.components.TableActionCellRender());
+        table.getColumnModel().getColumn(5).setCellEditor(new ui.components.TableActionCellEditor(event));
 
         JScrollPane sp = new JScrollPane(table);
-        sp.setBorder(BorderFactory.createLineBorder(new Color(223, 228, 234)));
+        sp.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
         sp.getViewport().setBackground(Color.WHITE);
 
         paginationPanel = new PaginationPanel((offset, limit, keyword) -> loadData(offset, limit, keyword));
@@ -76,13 +99,9 @@ public class EmployeesPanel extends JPanel {
         add(paginationPanel.getPagingPanel(), BorderLayout.SOUTH);
 
         // Actions
+        // Actions
         btnRefresh.addActionListener(e -> paginationPanel.reload());
         btnAdd.addActionListener(e -> showForm(null));
-        btnEdit.addActionListener(e -> {
-            Employee emp = getSelectedEmployee();
-            if (emp != null) showForm(emp);
-        });
-        btnDelete.addActionListener(e -> deleteSelected());
         btnResign.addActionListener(e -> resignSelected());
         btnActivate.addActionListener(e -> activateSelected());
 
@@ -107,7 +126,7 @@ public class EmployeesPanel extends JPanel {
             int totalCount = employeeDAO.countTotalAdmin(keyword);
             for (Employee e : list) {
                 model.addRow(new Object[]{
-                        e.getId(), e.getUsername(), e.getFullName(), e.getRole().name(), e.getStatus()
+                        e.getId(), e.getUsername(), e.getFullName(), e.getRole().name(), e.getStatus(), ""
                 });
             }
             paginationPanel.updatePagination(totalCount);
@@ -123,6 +142,10 @@ public class EmployeesPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 nhân viên trong bảng!");
             return null;
         }
+        return getEmployeeAt(row);
+    }
+
+    private Employee getEmployeeAt(int row) {
         Employee e = new Employee();
         e.setId((Integer) model.getValueAt(row, 0));
         e.setUsername((String) model.getValueAt(row, 1));
@@ -132,8 +155,8 @@ public class EmployeesPanel extends JPanel {
         return e;
     }
 
-    private void deleteSelected() {
-        Employee e = getSelectedEmployee();
+    private void deleteEmployeeAt(int row) {
+        Employee e = getEmployeeAt(row);
         if (e == null) return;
         
         if (e.getId() == currentAdmin.getId()) {

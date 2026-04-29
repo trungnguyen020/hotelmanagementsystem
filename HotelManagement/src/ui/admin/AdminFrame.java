@@ -26,12 +26,12 @@ public class AdminFrame extends JFrame {
         setLocationRelativeTo(null);
 
         JPanel root = new JPanel(new BorderLayout());
-        root.setBackground(new Color(250, 251, 253));
+        root.setBackground(new Color(245, 246, 250)); // Light grey background
         setContentPane(root);
 
         // --- Sidebar ---
         sidebar = new JPanel(new BorderLayout());
-        sidebar.setBackground(new Color(21, 18, 31)); // Dark background
+        sidebar.setBackground(new Color(2, 75, 141)); // Vibrant Blue background
         sidebar.setPreferredSize(new Dimension(220, 0));
         root.add(sidebar, BorderLayout.WEST);
 
@@ -48,7 +48,7 @@ public class AdminFrame extends JFrame {
         JButton btnToggle = new JButton("≡");
         btnToggle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         btnToggle.setForeground(Color.WHITE);
-        btnToggle.setBackground(new Color(21, 18, 31));
+        btnToggle.setBackground(new Color(2, 75, 141));
         btnToggle.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         btnToggle.setFocusPainted(false);
         btnToggle.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -72,8 +72,8 @@ public class AdminFrame extends JFrame {
         };
         menuButtons = new JButton[6];
         String[] letters = { "E", "R", "S", "D", "$", "L" };
-        Color btnBg = new Color(21, 18, 31);
-        Color hoverBg = new Color(40, 36, 56);
+        Color btnBg = new Color(2, 75, 141);
+        Color hoverBg = new Color(24, 106, 186); // Lighter blue for hover
 
         for (int i = 0; i < menuButtons.length; i++) {
             JButton b = new JButton(menuTexts[i]);
@@ -81,7 +81,7 @@ public class AdminFrame extends JFrame {
             b.setForeground(Color.WHITE);
             b.setBackground(btnBg);
             b.setBorder(new EmptyBorder(15, 15, 15, 15));
-            b.setIcon(createIcon(20, new Color(88, 77, 184), Color.WHITE, letters[i]));
+            b.setIcon(createIcon(20, new Color(255, 255, 255, 80), Color.WHITE, letters[i]));
             b.setHorizontalAlignment(SwingConstants.LEFT);
             b.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             b.setCursor(new Cursor(Cursor.HAND_CURSOR));

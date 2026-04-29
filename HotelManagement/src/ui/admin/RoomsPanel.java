@@ -17,9 +17,11 @@ public class RoomsPanel extends JPanel {
     private final RoomDAO roomDAO = new RoomDAO();
 
     private final DefaultTableModel model = new DefaultTableModel(
-            new Object[]{"ID", "Số phòng", "Loại phòng", "Giá/đêm", "Trạng thái"}, 0
+            new Object[]{"ID", "Số phòng", "Loại phòng", "Giá/đêm", "Trạng thái", "Thao tác"}, 0
     ) {
-        @Override public boolean isCellEditable(int row, int column) { return false; }
+        @Override public boolean isCellEditable(int row, int column) { 
+            return column == 5; 
+        }
     };
 
     private final JTable table = new JTable(model);
@@ -34,25 +36,45 @@ public class RoomsPanel extends JPanel {
         top.setOpaque(false);
 
         JButton btnAdd = createBtn("Thêm mới", new Color(46, 204, 113));
-        JButton btnEdit = createBtn("Sửa thông tin", new Color(52, 152, 219));
-        JButton btnDelete = createBtn("Xoá / Ẩn", new Color(231, 76, 60));
         JButton btnRefresh = createBtn("Làm mới", new Color(149, 165, 166));
 
         top.add(btnAdd);
-        top.add(btnEdit);
-        top.add(btnDelete);
         top.add(btnRefresh);
 
         table.setFillsViewportHeight(true);
-        table.setRowHeight(30);
+        table.setRowHeight(40);
         table.setFont(new Font("Tahoma", Font.PLAIN, 14));
         table.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 14));
-        table.getTableHeader().setBackground(new Color(236, 240, 241));
-        table.setSelectionBackground(new Color(189, 195, 199));
-        table.setShowGrid(false);
+        table.getTableHeader().setBackground(new Color(250, 250, 250));
+        table.getTableHeader().setBorder(BorderFactory.createEmptyBorder());
+        table.setSelectionBackground(new Color(235, 245, 255));
+        table.setShowVerticalLines(false);
+        table.setShowHorizontalLines(true);
+        table.setGridColor(new Color(230, 230, 230));
+
+        ui.components.TableActionEvent event = new ui.components.TableActionEvent() {
+            @Override
+            public void onEdit(int row) {
+                if (table.isEditing()) {
+                    table.getCellEditor().stopCellEditing();
+                }
+                RoomView r = getRoomAt(row);
+                if (r != null) showForm(r);
+            }
+
+            @Override
+            public void onDelete(int row) {
+                if (table.isEditing()) {
+                    table.getCellEditor().stopCellEditing();
+                }
+                deleteRoomAt(row);
+            }
+        };
+        table.getColumnModel().getColumn(5).setCellRenderer(new ui.components.TableActionCellRender());
+        table.getColumnModel().getColumn(5).setCellEditor(new ui.components.TableActionCellEditor(event));
 
         JScrollPane sp = new JScrollPane(table);
-        sp.setBorder(BorderFactory.createLineBorder(new Color(223, 228, 234)));
+        sp.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
         sp.getViewport().setBackground(Color.WHITE);
 
         paginationPanel = new PaginationPanel((offset, limit, keyword) -> loadData(offset, limit, keyword));
@@ -68,11 +90,6 @@ public class RoomsPanel extends JPanel {
 
         btnRefresh.addActionListener(e -> paginationPanel.reload());
         btnAdd.addActionListener(e -> showForm(null));
-        btnEdit.addActionListener(e -> {
-            RoomView r = getSelectedRoom();
-            if (r != null) showForm(r);
-        });
-        btnDelete.addActionListener(e -> deleteSelected());
 
         loadData(paginationPanel.getOffset(), paginationPanel.getPageSize(), paginationPanel.getKeyword());
     }
@@ -95,7 +112,7 @@ public class RoomsPanel extends JPanel {
             int totalCount = roomDAO.countTotal(keyword);
             for (RoomView r : list) {
                 model.addRow(new Object[]{
-                        r.getRoomId(), r.getRoomNumber(), r.getRoomType(), r.getPricePerNight(), r.getStatus()
+                        r.getRoomId(), r.getRoomNumber(), r.getRoomType(), r.getPricePerNight(), r.getStatus(), ""
                 });
             }
             paginationPanel.updatePagination(totalCount);
@@ -111,6 +128,10 @@ public class RoomsPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 phòng trong bảng!");
             return null;
         }
+        return getRoomAt(row);
+    }
+
+    private RoomView getRoomAt(int row) {
         RoomView r = new RoomView();
         r.setRoomId((Integer) model.getValueAt(row, 0));
         r.setRoomNumber((String) model.getValueAt(row, 1));
@@ -119,8 +140,8 @@ public class RoomsPanel extends JPanel {
         return r;
     }
 
-    private void deleteSelected() {
-        RoomView r = getSelectedRoom();
+    private void deleteRoomAt(int row) {
+        RoomView r = getRoomAt(row);
         if (r == null) return;
 
         int ans = JOptionPane.showConfirmDialog(this, "Bạn có muốn xóa phòng " + r.getRoomNumber() + "?", "Xác nhận", JOptionPane.YES_NO_OPTION);
