@@ -122,15 +122,6 @@ public class RoomsPanel extends JPanel {
         }
     }
 
-    private RoomView getSelectedRoom() {
-        int row = table.getSelectedRow();
-        if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 phòng trong bảng!");
-            return null;
-        }
-        return getRoomAt(row);
-    }
-
     private RoomView getRoomAt(int row) {
         RoomView r = new RoomView();
         r.setRoomId((Integer) model.getValueAt(row, 0));
