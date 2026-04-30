@@ -3,6 +3,7 @@ package dao;
 import model.Employee;
 import model.Role;
 import util.DBConnection;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,21 +15,33 @@ import java.util.List;
 public class EmployeeDAO {
 
     public Employee login(String username, String password) throws SQLException {
-        String sql = "SELECT e.id, e.username, e.full_name, r.code AS role_code " +
+        String sql = "SELECT e.id, e.username, e.password_hash, e.full_name, r.code AS role_code " +
                 "FROM employees e " +
                 "JOIN roles r ON r.id = e.role_id " +
                 "JOIN employee_status es ON es.id = e.status_id " +
-                "WHERE e.username = ? AND e.password_hash = ? AND es.code = 'ACTIVE'";
+                "WHERE e.username = ? AND es.code = 'ACTIVE'";
 
         try (Connection c = DBConnection.getConnection();
                 PreparedStatement ps = c.prepareStatement(sql)) {
 
             ps.setString(1, username);
-            ps.setString(2, password);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next())
                     return null;
+                
+                String hashedPw = rs.getString("password_hash");
+                // Fallback for plain-text or BCrypt check
+                boolean pwMatch = false;
+                if (hashedPw != null && hashedPw.startsWith("$2a$")) {
+                    pwMatch = BCrypt.checkpw(password, hashedPw);
+                } else {
+                    pwMatch = password.equals(hashedPw);
+                }
+
+                if (!pwMatch) {
+                    return null;
+                }
 
                 Employee e = new Employee();
                 e.setId(rs.getInt("id"));
@@ -97,8 +110,7 @@ public class EmployeeDAO {
         try (Connection c = DBConnection.getConnection();
                 PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, e.getUsername());
-            ps.setString(2, plainPassword); // Note: Simple hashing in real life, here plain/plain-ish as per original
-                                            // seed
+            ps.setString(2, BCrypt.hashpw(plainPassword, BCrypt.gensalt())); 
             ps.setString(3, e.getFullName());
             ps.setInt(4, "ADMIN".equals(e.getRole().name()) ? 1 : 2);
             ps.executeUpdate();
@@ -117,7 +129,7 @@ public class EmployeeDAO {
             ps.setInt(3, e.getStatus().equals("ACTIVE") ? 1 : 2);
             int idx = 4;
             if (updatePass) {
-                ps.setString(idx++, newPlainPassword);
+                ps.setString(idx++, BCrypt.hashpw(newPlainPassword, BCrypt.gensalt()));
             }
             ps.setInt(idx, e.getId());
             ps.executeUpdate();
