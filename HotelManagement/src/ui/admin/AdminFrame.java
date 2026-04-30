@@ -67,11 +67,11 @@ public class AdminFrame extends JFrame {
         sidebar.add(menuContainer, BorderLayout.CENTER);
 
         menuTexts = new String[] {
-                " Quản lý nhân viên", " Quản lý phòng", " Quản lý dịch vụ",
-                " Doanh thu / Hóa đơn", " Tính lương", " Đăng xuất"
+                " Bảng điều khiển", " Quản lý nhân viên", " Quản lý phòng", " Quản lý dịch vụ",
+                " Cấu hình giảm giá", " Doanh thu / Hóa đơn", " Tính lương", " Đăng xuất"
         };
-        menuButtons = new JButton[6];
-        String[] letters = { "E", "R", "S", "D", "$", "L" };
+        menuButtons = new JButton[8];
+        String[] letters = { "A", "E", "R", "S", "C", "D", "$", "L" };
         Color btnBg = new Color(2, 75, 141);
         Color hoverBg = new Color(24, 106, 186); // Lighter blue for hover
 
@@ -119,9 +119,11 @@ public class AdminFrame extends JFrame {
         // Cards Container
         cardPanel.setOpaque(false);
         cardPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        cardPanel.add(new AnalyticsPanel(), "analytics");
         cardPanel.add(new EmployeesPanel(me), "employees");
         cardPanel.add(new RoomsPanel(), "rooms");
         cardPanel.add(new ServicesPanel(), "services");
+        cardPanel.add(new RulesPanel(), "rules");
         cardPanel.add(new RevenuePanel(), "revenue");
         cardPanel.add(new SalaryPanel(), "salary");
         mainArea.add(cardPanel, BorderLayout.CENTER);
@@ -129,17 +131,19 @@ public class AdminFrame extends JFrame {
         // Actions
         btnToggle.addActionListener(e -> toggleSidebar());
 
-        menuButtons[0].addActionListener(e -> card.show(cardPanel, "employees"));
-        menuButtons[1].addActionListener(e -> card.show(cardPanel, "rooms"));
-        menuButtons[2].addActionListener(e -> card.show(cardPanel, "services"));
-        menuButtons[3].addActionListener(e -> card.show(cardPanel, "revenue"));
-        menuButtons[4].addActionListener(e -> card.show(cardPanel, "salary"));
-        menuButtons[5].addActionListener(e -> {
+        menuButtons[0].addActionListener(e -> card.show(cardPanel, "analytics"));
+        menuButtons[1].addActionListener(e -> card.show(cardPanel, "employees"));
+        menuButtons[2].addActionListener(e -> card.show(cardPanel, "rooms"));
+        menuButtons[3].addActionListener(e -> card.show(cardPanel, "services"));
+        menuButtons[4].addActionListener(e -> card.show(cardPanel, "rules"));
+        menuButtons[5].addActionListener(e -> card.show(cardPanel, "revenue"));
+        menuButtons[6].addActionListener(e -> card.show(cardPanel, "salary"));
+        menuButtons[7].addActionListener(e -> {
             dispose();
             new ui.auth.LoginFrame().setVisible(true);
         });
 
-        card.show(cardPanel, "employees");
+        card.show(cardPanel, "analytics");
     }
 
     private void toggleSidebar() {

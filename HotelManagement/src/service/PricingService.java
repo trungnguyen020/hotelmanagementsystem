@@ -1,9 +1,15 @@
 package service;
 
+import dao.DiscountRuleDAO;
+import model.DiscountRule;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 public class PricingService {
+    
+    private final DiscountRuleDAO ruleDAO = new DiscountRuleDAO();
 
 	public static class PriceResult {
 		public long fullDays; // số ngày tròn
@@ -41,12 +47,18 @@ public class PricingService {
 
 		java.math.BigDecimal roomCharge = pricePerNight.multiply(billDays).setScale(2, java.math.RoundingMode.HALF_UP);
 
-		// Giảm giá theo SỐ NGÀY TRÒN (baseDays), không tính nửa ngày
 		java.math.BigDecimal autoDiscount = java.math.BigDecimal.ZERO;
-		if (baseDays >= 20)
-			autoDiscount = new java.math.BigDecimal("20");
-		else if (baseDays >= 10)
-			autoDiscount = new java.math.BigDecimal("10");
+		try {
+			List<DiscountRule> rules = ruleDAO.findAll(); // Already ordered by min_days DESC
+			for (DiscountRule rule : rules) {
+				if (baseDays >= rule.getMinDays()) {
+					autoDiscount = rule.getDiscountPercent();
+					break; // Pick the highest applicable discount
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		PriceResult r = new PriceResult();
 		r.fullDays = baseDays;
