@@ -31,7 +31,7 @@ public class AnalyticsPanel extends JPanel {
 
         add(titlePanel, BorderLayout.NORTH);
 
-        JPanel contentPanel = new JPanel(new GridLayout(1, 3, 20, 20));
+        JPanel contentPanel = new JPanel(new GridLayout(1, 2, 20, 20)); // Thay đổi thành 1 row, 2 cols
         contentPanel.setOpaque(false);
 
         // Card 1: Room Usage
@@ -44,17 +44,11 @@ public class AnalyticsPanel extends JPanel {
         updateRevenueCard(pnlRevenue);
         contentPanel.add(pnlRevenue);
 
-        // Card 3: Top Customers
-        JPanel pnlTopCustomers = createCard("Khách hàng trung thành (Top 5)");
-        updateTopCustomersCard(pnlTopCustomers);
-        contentPanel.add(pnlTopCustomers);
-
         add(contentPanel, BorderLayout.CENTER);
 
         btnRefresh.addActionListener(e -> {
             updateRoomUsageCard(pnlRoomUsage);
             updateRevenueCard(pnlRevenue);
-            updateTopCustomersCard(pnlTopCustomers);
             revalidate();
             repaint();
         });
@@ -125,22 +119,5 @@ public class AnalyticsPanel extends JPanel {
         card.add(content, BorderLayout.CENTER);
     }
 
-    private void updateTopCustomersCard(JPanel card) {
-        if (card.getComponentCount() > 1) {
-            card.remove(1);
-        }
-        JPanel content = new JPanel(new GridLayout(0, 2, 10, 10));
-        content.setOpaque(false);
-        Map<String, Integer> data = analyticsDAO.getTopCustomers(5);
-        for (Map.Entry<String, Integer> entry : data.entrySet()) {
-            JLabel lblName = new JLabel(entry.getKey());
-            lblName.setFont(new Font("Arial", Font.PLAIN, 14));
-            JLabel lblVal = new JLabel(entry.getValue() + " lần thuê");
-            lblVal.setFont(new Font("Arial", Font.BOLD, 14));
-            lblVal.setForeground(new Color(230, 126, 34)); // Orange
-            content.add(lblName);
-            content.add(lblVal);
-        }
-        card.add(content, BorderLayout.CENTER);
-    }
+    // Đã xóa hàm updateTopCustomersCard
 }

@@ -62,4 +62,57 @@ public class CustomerDAO {
         }
         return list;
     }
+
+    public List<Customer> findPaginated(String keyword, int offset, int limit) throws SQLException {
+        String kw = keyword == null ? "" : keyword.trim();
+        String sql =
+            "SELECT id, full_name, phone, id_number " +
+            "FROM customers " +
+            "WHERE full_name LIKE ? OR id_number LIKE ? OR phone LIKE ? " +
+            "ORDER BY full_name " +
+            "LIMIT ? OFFSET ?";
+
+        List<Customer> list = new ArrayList<>();
+
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            String like = "%" + kw + "%";
+            ps.setString(1, like);
+            ps.setString(2, like);
+            ps.setString(3, like);
+            ps.setInt(4, limit);
+            ps.setInt(5, offset);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Customer cs = new Customer();
+                    cs.setId(rs.getInt("id"));
+                    cs.setFullName(rs.getString("full_name"));
+                    cs.setPhone(rs.getString("phone"));
+                    cs.setIdNumber(rs.getString("id_number"));
+                    list.add(cs);
+                }
+            }
+        }
+        return list;
+    }
+
+    public int countTotal(String keyword) throws SQLException {
+        String kw = keyword == null ? "" : keyword.trim();
+        String sql = "SELECT COUNT(*) FROM customers WHERE full_name LIKE ? OR id_number LIKE ? OR phone LIKE ?";
+        
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            String like = "%" + kw + "%";
+            ps.setString(1, like);
+            ps.setString(2, like);
+            ps.setString(3, like);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
 }

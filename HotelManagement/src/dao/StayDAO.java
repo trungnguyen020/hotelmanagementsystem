@@ -1,6 +1,7 @@
 package dao;
 
 import model.StayView;
+import model.BookingHistoryItem;
 import util.DBConnection;
 
 import java.math.BigDecimal;
@@ -162,5 +163,48 @@ public class StayDAO {
                 c.setAutoCommit(true);
             }
         }
+    }
+
+    public List<BookingHistoryItem> getBookingHistory(int customerId) throws SQLException {
+        String sql = 
+            "SELECT r.room_number, s.checkin_at, s.checkout_at, ss.code as status_code, i.total " +
+            "FROM stays s " +
+            "JOIN rooms r ON s.room_id = r.id " +
+            "JOIN stay_status ss ON s.status_id = ss.id " +
+            "LEFT JOIN invoices i ON i.stay_id = s.id " +
+            "WHERE s.customer_id = ? " +
+            "ORDER BY s.checkin_at DESC";
+
+        List<BookingHistoryItem> list = new ArrayList<>();
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            
+            ps.setInt(1, customerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    BookingHistoryItem item = new BookingHistoryItem();
+                    item.setRoomNumber(rs.getString("room_number"));
+                    
+                    Timestamp inT = rs.getTimestamp("checkin_at");
+                    if (inT != null) item.setCheckinAt(inT.toLocalDateTime());
+                    
+                    Timestamp outT = rs.getTimestamp("checkout_at");
+                    if (outT != null) item.setCheckoutAt(outT.toLocalDateTime());
+                    
+                    String statusCode = rs.getString("status_code");
+                    if ("CHECKED_OUT".equals(statusCode)) {
+                        item.setStatus("Đã trả phòng");
+                    } else if ("CHECKED_IN".equals(statusCode)) {
+                        item.setStatus("Đang ở");
+                    } else {
+                        item.setStatus(statusCode);
+                    }
+                    
+                    item.setTotalPaid(rs.getBigDecimal("total"));
+                    list.add(item);
+                }
+            }
+        }
+        return list;
     }
 }

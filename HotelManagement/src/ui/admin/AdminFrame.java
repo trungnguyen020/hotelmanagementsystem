@@ -67,11 +67,11 @@ public class AdminFrame extends JFrame {
         sidebar.add(menuContainer, BorderLayout.CENTER);
 
         menuTexts = new String[] {
-                " Bảng điều khiển", " Quản lý nhân viên", " Quản lý phòng", " Quản lý dịch vụ",
+                " Bảng điều khiển", " Quản lý nhân viên", " Quản lý khách hàng", " Quản lý phòng", " Quản lý dịch vụ",
                 " Cấu hình giảm giá", " Doanh thu / Hóa đơn", " Tính lương", " Đăng xuất"
         };
-        menuButtons = new JButton[8];
-        String[] letters = { "A", "E", "R", "S", "C", "D", "$", "L" };
+        menuButtons = new JButton[9];
+        String[] letters = { "A", "E", "C", "R", "S", "D", "R", "$", "L" };
         Color btnBg = new Color(2, 75, 141);
         Color hoverBg = new Color(24, 106, 186); // Lighter blue for hover
 
@@ -121,6 +121,7 @@ public class AdminFrame extends JFrame {
         cardPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         cardPanel.add(new AnalyticsPanel(), "analytics");
         cardPanel.add(new EmployeesPanel(me), "employees");
+        cardPanel.add(new CustomersPanel(), "customers");
         cardPanel.add(new RoomsPanel(), "rooms");
         cardPanel.add(new ServicesPanel(), "services");
         cardPanel.add(new RulesPanel(), "rules");
@@ -133,12 +134,13 @@ public class AdminFrame extends JFrame {
 
         menuButtons[0].addActionListener(e -> card.show(cardPanel, "analytics"));
         menuButtons[1].addActionListener(e -> card.show(cardPanel, "employees"));
-        menuButtons[2].addActionListener(e -> card.show(cardPanel, "rooms"));
-        menuButtons[3].addActionListener(e -> card.show(cardPanel, "services"));
-        menuButtons[4].addActionListener(e -> card.show(cardPanel, "rules"));
-        menuButtons[5].addActionListener(e -> card.show(cardPanel, "revenue"));
-        menuButtons[6].addActionListener(e -> card.show(cardPanel, "salary"));
-        menuButtons[7].addActionListener(e -> {
+        menuButtons[2].addActionListener(e -> card.show(cardPanel, "customers"));
+        menuButtons[3].addActionListener(e -> card.show(cardPanel, "rooms"));
+        menuButtons[4].addActionListener(e -> card.show(cardPanel, "services"));
+        menuButtons[5].addActionListener(e -> card.show(cardPanel, "rules"));
+        menuButtons[6].addActionListener(e -> card.show(cardPanel, "revenue"));
+        menuButtons[7].addActionListener(e -> card.show(cardPanel, "salary"));
+        menuButtons[8].addActionListener(e -> {
             dispose();
             new ui.auth.LoginFrame().setVisible(true);
         });
