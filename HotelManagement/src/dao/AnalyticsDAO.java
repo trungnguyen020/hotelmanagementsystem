@@ -12,10 +12,11 @@ public class AnalyticsDAO {
 
     public Map<String, Integer> getRoomTypeUsage() {
         Map<String, Integer> map = new HashMap<>();
-        String sql = "SELECT r.type, COUNT(s.id) as usage_count " +
+        String sql = "SELECT rt.name as type, COUNT(s.id) as usage_count " +
                      "FROM stays s " +
                      "JOIN rooms r ON s.room_id = r.id " +
-                     "GROUP BY r.type";
+                     "JOIN room_types rt ON r.room_type_id = rt.id " +
+                     "GROUP BY rt.name";
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -30,11 +31,12 @@ public class AnalyticsDAO {
 
     public Map<String, Double> getRevenueByRoomType() {
         Map<String, Double> map = new HashMap<>();
-        String sql = "SELECT r.type, SUM(s.total_amount) as total_revenue " +
+        String sql = "SELECT rt.name as type, SUM(i.total) as total_revenue " +
                      "FROM stays s " +
                      "JOIN rooms r ON s.room_id = r.id " +
-                     "WHERE s.checkout_at IS NOT NULL " +
-                     "GROUP BY r.type";
+                     "JOIN room_types rt ON r.room_type_id = rt.id " +
+                     "JOIN invoices i ON i.stay_id = s.id " +
+                     "GROUP BY rt.name";
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
