@@ -132,6 +132,18 @@ public class RoomDAO {
     }
 
     public void deleteOrHide(int roomId) throws SQLException {
+        // Kiểm tra xem phòng có đang có khách ở hoặc đơn đặt không (CHECKED_IN)
+        String checkSql = "SELECT COUNT(*) FROM stays s JOIN stay_status ss ON s.status_id = ss.id WHERE s.room_id = ? AND ss.code = 'CHECKED_IN'";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(checkSql)) {
+            ps.setInt(1, roomId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    throw new SQLException("Phòng đang có người ở hoặc đang có đơn đặt, không thể xóa!");
+                }
+            }
+        }
+
         try (Connection c = DBConnection.getConnection()) {
             c.setAutoCommit(false);
             try {
