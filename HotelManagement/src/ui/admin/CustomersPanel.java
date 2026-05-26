@@ -155,6 +155,7 @@ public class CustomersPanel extends JPanel {
         });
 
         dialog.setVisible(true);
+    }
 
     private void loadData(int offset, int limit, String keyword) {
         try {
