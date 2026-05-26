@@ -77,8 +77,14 @@ public class RulesPanel extends JPanel {
 
     private void saveRule() {
         try {
-            int minDays = Integer.parseInt(txtMinDays.getText());
-            BigDecimal discount = new BigDecimal(txtDiscount.getText());
+            String strMinDays = txtMinDays.getText().trim();
+            String strDiscount = txtDiscount.getText().trim();
+            if (strMinDays.isEmpty() || strDiscount.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng không để trống số ngày tối thiểu hoặc phần trăm giảm!");
+                return;
+            }
+            int minDays = Integer.parseInt(strMinDays);
+            BigDecimal discount = new BigDecimal(strDiscount);
 
             List<DiscountRule> existing = ruleDAO.findAll();
             DiscountRule ruleToUpdate = null;

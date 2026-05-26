@@ -9,5 +9,7 @@
 	<classpathentry kind="lib" path="lib/mysql-connector-j-9.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/itextpdf-5.5.13.3.jar"/>
 	<classpathentry kind="lib" path="lib/jbcrypt-0.4.jar"/>
+	<classpathentry kind="lib" path="lib/flatlaf-3.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart-1.5.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

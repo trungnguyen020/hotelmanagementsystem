@@ -4,13 +4,22 @@ import dao.AnalyticsDAO;
 
 import javax.swing.*;
 import java.awt.*;
-import java.text.NumberFormat;
-import java.util.Locale;
 import java.util.Map;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.PiePlot;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
 
 public class AnalyticsPanel extends JPanel {
     private final AnalyticsDAO analyticsDAO = new AnalyticsDAO();
-    private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
 
     public AnalyticsPanel() {
         setLayout(new BorderLayout(20, 20));
@@ -74,49 +83,52 @@ public class AnalyticsPanel extends JPanel {
         if (card.getComponentCount() > 1) {
             card.remove(1);
         }
-        JPanel content = new JPanel(new GridLayout(0, 2, 10, 10));
-        content.setOpaque(false);
+        
         Map<String, Integer> data = analyticsDAO.getRoomTypeUsage();
+        DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
         for (Map.Entry<String, Integer> entry : data.entrySet()) {
-            JLabel lblType = new JLabel(entry.getKey() + ":");
-            lblType.setFont(new Font("Arial", Font.PLAIN, 14));
-            JLabel lblVal = new JLabel(entry.getValue() + " lượt");
-            lblVal.setFont(new Font("Arial", Font.BOLD, 14));
-            lblVal.setForeground(new Color(60, 130, 200));
-            content.add(lblType);
-            content.add(lblVal);
+            dataset.setValue(entry.getKey(), entry.getValue());
         }
-        card.add(content, BorderLayout.CENTER);
+        
+        JFreeChart chart = ChartFactory.createPieChart(
+                "Tỉ lệ đặt phòng", dataset, true, true, false);
+        chart.setBackgroundPaint(Color.WHITE);
+        
+        @SuppressWarnings("unchecked")
+        PiePlot<String> plot = (PiePlot<String>) chart.getPlot();
+        plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}: {1} lượt ({2})"));
+        plot.setBackgroundPaint(Color.WHITE);
+        
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new Dimension(300, 250));
+        
+        card.add(chartPanel, BorderLayout.CENTER);
     }
 
     private void updateRevenueCard(JPanel card) {
         if (card.getComponentCount() > 1) {
             card.remove(1);
         }
-        JPanel content = new JPanel(new GridLayout(0, 2, 10, 10));
-        content.setOpaque(false);
         Map<String, Double> data = analyticsDAO.getRevenueByRoomType();
-        double total = 0;
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (Map.Entry<String, Double> entry : data.entrySet()) {
-            JLabel lblType = new JLabel(entry.getKey() + ":");
-            lblType.setFont(new Font("Arial", Font.PLAIN, 14));
-            JLabel lblVal = new JLabel(currencyFormatter.format(entry.getValue()));
-            lblVal.setFont(new Font("Arial", Font.BOLD, 14));
-            lblVal.setForeground(new Color(46, 204, 113)); // Green
-            content.add(lblType);
-            content.add(lblVal);
-            total += entry.getValue();
+            dataset.addValue(entry.getValue(), "Doanh thu", entry.getKey());
         }
         
-        JLabel lblTotalType = new JLabel("Tổng cộng:");
-        lblTotalType.setFont(new Font("Arial", Font.BOLD, 14));
-        JLabel lblTotalVal = new JLabel(currencyFormatter.format(total));
-        lblTotalVal.setFont(new Font("Arial", Font.BOLD, 14));
-        lblTotalVal.setForeground(Color.RED);
-        content.add(lblTotalType);
-        content.add(lblTotalVal);
-
-        card.add(content, BorderLayout.CENTER);
+        JFreeChart chart = ChartFactory.createBarChart(
+                "Doanh thu theo loại phòng", "Loại phòng", "VNĐ", dataset, PlotOrientation.VERTICAL, false, true, false);
+        chart.setBackgroundPaint(Color.WHITE);
+        
+        CategoryPlot plot = chart.getCategoryPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+        renderer.setDefaultItemLabelsVisible(true);
+        
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new Dimension(300, 250));
+        
+        card.add(chartPanel, BorderLayout.CENTER);
     }
 
     // Đã xóa hàm updateTopCustomersCard

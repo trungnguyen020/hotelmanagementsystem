@@ -1,5 +1,6 @@
 package ui.employee;
 
+import dao.AttendanceDAO;
 import model.Employee;
 
 import javax.swing.*;
@@ -36,8 +37,8 @@ public class StaffFrame extends JFrame {
 
         // --- Sidebar ---
         sidebar = new JPanel(new BorderLayout());
-        sidebar.setBackground(new Color(2, 75, 141)); // Vibrant Blue background
-        sidebar.setPreferredSize(new Dimension(220, 0));
+        sidebar.setBackground(new Color(44, 62, 80)); // Modern Dark Gray-Blue
+        sidebar.setPreferredSize(new Dimension(240, 0));
         root.add(sidebar, BorderLayout.WEST);
 
         // Sidebar Top
@@ -53,7 +54,7 @@ public class StaffFrame extends JFrame {
         JButton btnToggle = new JButton("≡");
         btnToggle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         btnToggle.setForeground(Color.WHITE);
-        btnToggle.setBackground(new Color(2, 75, 141));
+        btnToggle.setBackground(new Color(44, 62, 80));
         btnToggle.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         btnToggle.setFocusPainted(false);
         btnToggle.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -76,8 +77,8 @@ public class StaffFrame extends JFrame {
         };
         menuButtons = new JButton[5];
         String[] letters = { "R", "S", "I", "O", "L" };
-        Color btnBg = new Color(2, 75, 141);
-        Color hoverBg = new Color(24, 106, 186); // Lighter blue for hover
+        Color btnBg = new Color(44, 62, 80);
+        Color hoverBg = new Color(52, 73, 94); // Lighter gray-blue for hover
 
         for (int i = 0; i < menuButtons.length; i++) {
             JButton b = new JButton(menuTexts[i]);
@@ -89,6 +90,7 @@ public class StaffFrame extends JFrame {
             b.setHorizontalAlignment(SwingConstants.LEFT);
             b.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            b.setUI(new javax.swing.plaf.basic.BasicButtonUI());
 
             // Hover effect
             b.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -121,6 +123,17 @@ public class StaffFrame extends JFrame {
         top.setFont(new Font("Segoe UI", Font.BOLD, 14));
         top.setForeground(new Color(50, 50, 50));
         topBar.add(top, BorderLayout.WEST);
+        
+        // Attendance button
+        JPanel topActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        topActions.setOpaque(false);
+        JButton btnAttendance = new JButton("Điểm danh");
+        btnAttendance.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnAttendance.setFocusPainted(false);
+        btnAttendance.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        topActions.add(btnAttendance);
+        topBar.add(topActions, BorderLayout.EAST);
+        
         mainArea.add(topBar, BorderLayout.NORTH);
 
         // Cards Container
@@ -134,6 +147,35 @@ public class StaffFrame extends JFrame {
 
         // Actions
         btnToggle.addActionListener(e -> toggleSidebar());
+
+        AttendanceDAO attDao = new AttendanceDAO();
+        try {
+            if (attDao.hasCheckedInToday(me.getId())) {
+                btnAttendance.setText("Đã điểm danh");
+                btnAttendance.setBackground(new Color(46, 204, 113));
+                btnAttendance.setForeground(Color.WHITE);
+                btnAttendance.setEnabled(false);
+            } else {
+                btnAttendance.setBackground(new Color(52, 152, 219));
+                btnAttendance.setForeground(Color.WHITE);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        btnAttendance.addActionListener(e -> {
+            try {
+                attDao.checkIn(me.getId());
+                btnAttendance.setText("Đã điểm danh");
+                btnAttendance.setBackground(new Color(46, 204, 113));
+                btnAttendance.setForeground(Color.WHITE);
+                btnAttendance.setEnabled(false);
+                JOptionPane.showMessageDialog(this, "Điểm danh thành công!");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Lỗi điểm danh: " + ex.getMessage());
+            }
+        });
 
         menuButtons[0].addActionListener(e -> {
             roomsPanel.reload();

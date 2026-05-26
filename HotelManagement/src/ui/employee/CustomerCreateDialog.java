@@ -64,15 +64,18 @@ public class CustomerCreateDialog extends JDialog {
 
     private void onOk() {
         String name = txtName.getText().trim();
-        if (name.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập họ tên khách!");
+        String phone = txtPhone.getText().trim();
+        String idNo = txtIdNo.getText().trim();
+        
+        if (name.isEmpty() || phone.isEmpty() || idNo.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng điền đầy đủ họ tên, SĐT và CCCD/ID!");
             return;
         }
 
         Customer c = new Customer();
         c.setFullName(name);
-        c.setPhone(txtPhone.getText().trim());
-        c.setIdNumber(txtIdNo.getText().trim());
+        c.setPhone(phone);
+        c.setIdNumber(idNo);
 
         this.result = c;
         dispose();

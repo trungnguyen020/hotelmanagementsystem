@@ -15,7 +15,7 @@ public class CustomerHistoryDialog extends JDialog {
 
     private final StayDAO stayDAO = new StayDAO();
     private final DefaultTableModel model;
-    private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
+    private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN"));
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public CustomerHistoryDialog(Window owner, int customerId, String customerName) {
