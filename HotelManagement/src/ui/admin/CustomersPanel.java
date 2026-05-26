@@ -55,16 +55,106 @@ public class CustomersPanel extends JPanel {
         JLabel title = new JLabel("QUẢN LÝ KHÁCH HÀNG");
         title.setFont(new Font("Arial", Font.BOLD, 18));
         title.setForeground(new Color(2, 75, 141));
-        title.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        northPanel.add(title, BorderLayout.NORTH);
+        
+        JButton btnEdit = new JButton("Sửa thông tin");
+        btnEdit.setBackground(new Color(230, 126, 34)); // Orange
+        btnEdit.setForeground(Color.WHITE);
+        btnEdit.setFocusPainted(false);
+        btnEdit.setFont(new Font("Tahoma", Font.BOLD, 13));
+        btnEdit.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        titlePanel.setOpaque(false);
+        titlePanel.add(title);
+        titlePanel.add(Box.createHorizontalStrut(20));
+        titlePanel.add(btnEdit);
+        
+        northPanel.add(titlePanel, BorderLayout.NORTH);
         northPanel.add(paginationPanel.getSearchPanel(), BorderLayout.SOUTH);
 
         add(northPanel, BorderLayout.NORTH);
         add(sp, BorderLayout.CENTER);
         add(paginationPanel.getPagingPanel(), BorderLayout.SOUTH);
+        
+        btnEdit.addActionListener(e -> editSelected());
 
         loadData(paginationPanel.getOffset(), paginationPanel.getPageSize(), paginationPanel.getKeyword());
     }
+
+    private Customer getSelectedCustomer() {
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 khách hàng trong bảng để sửa!");
+            return null;
+        }
+        Customer c = new Customer();
+        c.setId((Integer) model.getValueAt(row, 0));
+        c.setFullName((String) model.getValueAt(row, 1));
+        c.setPhone((String) model.getValueAt(row, 2));
+        c.setIdNumber((String) model.getValueAt(row, 3));
+        return c;
+    }
+
+    private void editSelected() {
+        Customer c = getSelectedCustomer();
+        if (c == null) return;
+        
+        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Sửa Thông Tin Khách Hàng", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setSize(400, 250);
+        dialog.setLocationRelativeTo(this);
+        dialog.setResizable(false);
+
+        JPanel p = new JPanel(new GridLayout(4, 2, 10, 10));
+        p.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        JTextField txtName = new JTextField(c.getFullName());
+        JTextField txtPhone = new JTextField(c.getPhone());
+        JTextField txtId = new JTextField(c.getIdNumber());
+
+        p.add(new JLabel("Họ và tên:")); p.add(txtName);
+        p.add(new JLabel("Số điện thoại:")); p.add(txtPhone);
+        p.add(new JLabel("CCCD/CMND:")); p.add(txtId);
+
+        JButton btnSave = new JButton("Lưu Thay Đổi");
+        btnSave.setBackground(new Color(46, 204, 113));
+        btnSave.setForeground(Color.WHITE);
+        btnSave.setFocusPainted(false);
+        
+        p.add(new JLabel());
+        p.add(btnSave);
+
+        dialog.add(p);
+
+        btnSave.addActionListener(evt -> {
+            String n = txtName.getText().trim();
+            String ph = txtPhone.getText().trim();
+            String idNo = txtId.getText().trim();
+            
+            if (n.isEmpty() || ph.isEmpty() || idNo.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Vui lòng nhập đầy đủ thông tin!");
+                return;
+            }
+            if (n.length() < 3 || n.matches(".*\\d.*") || n.matches("^[^a-zA-Z0-9]+$")) {
+                JOptionPane.showMessageDialog(dialog, "Họ và tên không hợp lệ (ít nhất 3 ký tự, không chứa số)!");
+                return;
+            }
+            
+            c.setFullName(n);
+            c.setPhone(ph);
+            c.setIdNumber(idNo);
+            
+            try {
+                customerDAO.update(c);
+                dialog.dispose();
+                JOptionPane.showMessageDialog(this, "Cập nhật thông tin khách hàng thành công!");
+                paginationPanel.reload();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(dialog, "Lỗi cập nhật: " + ex.getMessage());
+            }
+        });
+
+        dialog.setVisible(true);
 
     private void loadData(int offset, int limit, String keyword) {
         try {

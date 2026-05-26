@@ -27,6 +27,18 @@ public class CustomerDAO {
         }
     }
 
+    public void update(Customer cst) throws SQLException {
+        String sql = "UPDATE customers SET full_name = ?, phone = ?, id_number = ? WHERE id = ?";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, cst.getFullName());
+            ps.setString(2, cst.getPhone());
+            ps.setString(3, cst.getIdNumber());
+            ps.setInt(4, cst.getId());
+            ps.executeUpdate();
+        }
+    }
+
     // Search theo Tên / CCCD / Phone
     public List<Customer> search(String keyword) throws SQLException {
         String kw = keyword == null ? "" : keyword.trim();

@@ -300,6 +300,17 @@ public class EmployeesPanel extends JPanel {
                     JOptionPane.showMessageDialog(dialog, "Vui lòng điền đủ thông tin bắt buộc!");
                     return;
                 }
+                
+                if (u.length() < 3 || !u.matches("^[a-zA-Z0-9_]+$")) {
+                    JOptionPane.showMessageDialog(dialog, "Tên đăng nhập phải có ít nhất 3 ký tự và không chứa ký tự đặc biệt!");
+                    return;
+                }
+                
+                if (n.length() < 3 || n.matches(".*\\d.*") || n.matches("^[^a-zA-Z0-9]+$")) {
+                    JOptionPane.showMessageDialog(dialog, "Họ và tên không hợp lệ (phải có ít nhất 3 ký tự, không chứa số)!");
+                    return;
+                }
+
                 if ((e == null && pass.length() < 6) || (!pass.isEmpty() && pass.length() < 6)) {
                     JOptionPane.showMessageDialog(dialog, "Mật khẩu phải có ít nhất 6 ký tự!");
                     return;
