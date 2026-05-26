@@ -11,11 +11,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.math.BigDecimal;
 
 public class EmployeeDAO {
 
     public Employee login(String username, String password) throws SQLException {
-        String sql = "SELECT e.id, e.username, e.password_hash, e.full_name, r.code AS role_code " +
+        String sql = "SELECT e.id, e.username, e.password_hash, e.full_name, e.basic_salary, r.code AS role_code " +
                 "FROM employees e " +
                 "JOIN roles r ON r.id = e.role_id " +
                 "JOIN employee_status es ON es.id = e.status_id " +
@@ -47,6 +48,9 @@ public class EmployeeDAO {
                 e.setId(rs.getInt("id"));
                 e.setUsername(rs.getString("username"));
                 e.setFullName(rs.getString("full_name"));
+                
+                BigDecimal bs = rs.getBigDecimal("basic_salary");
+                e.setBasicSalary(bs != null ? bs : new BigDecimal("7000000"));
 
                 String roleCode = rs.getString("role_code"); // ADMIN / STAFF
                 e.setRole(Role.valueOf(roleCode));
@@ -57,7 +61,7 @@ public class EmployeeDAO {
     }
 
     public List<Employee> findPaginatedAdmin(String keyword, int offset, int limit) throws SQLException {
-        String sql = "SELECT e.id, e.username, e.full_name, r.code AS role_code, es.code AS status_code " +
+        String sql = "SELECT e.id, e.username, e.full_name, e.basic_salary, r.code AS role_code, es.code AS status_code " +
                 "FROM employees e " +
                 "JOIN roles r ON r.id = e.role_id " +
                 "JOIN employee_status es ON es.id = e.status_id " +
@@ -80,6 +84,10 @@ public class EmployeeDAO {
                     e.setId(rs.getInt("id"));
                     e.setUsername(rs.getString("username"));
                     e.setFullName(rs.getString("full_name"));
+                    
+                    BigDecimal bs = rs.getBigDecimal("basic_salary");
+                    e.setBasicSalary(bs != null ? bs : new BigDecimal("7000000"));
+                    
                     String roleCode = rs.getString("role_code");
                     e.setRole(Role.valueOf(roleCode));
                     e.setStatus(rs.getString("status_code"));
@@ -106,20 +114,21 @@ public class EmployeeDAO {
     }
 
     public void insert(Employee e, String plainPassword) throws SQLException {
-        String sql = "INSERT INTO employees(username, password_hash, full_name, role_id, status_id) VALUES (?, ?, ?, ?, 1)";
+        String sql = "INSERT INTO employees(username, password_hash, full_name, role_id, status_id, basic_salary) VALUES (?, ?, ?, ?, 1, ?)";
         try (Connection c = DBConnection.getConnection();
                 PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, e.getUsername());
             ps.setString(2, BCrypt.hashpw(plainPassword, BCrypt.gensalt())); 
             ps.setString(3, e.getFullName());
             ps.setInt(4, "ADMIN".equals(e.getRole().name()) ? 1 : 2);
+            ps.setBigDecimal(5, e.getBasicSalary() != null ? e.getBasicSalary() : new BigDecimal("7000000"));
             ps.executeUpdate();
         }
     }
 
     public void update(Employee e, String newPlainPassword) throws SQLException {
         boolean updatePass = newPlainPassword != null && !newPlainPassword.trim().isEmpty();
-        String sql = "UPDATE employees SET full_name = ?, role_id = ?, status_id = ? " +
+        String sql = "UPDATE employees SET full_name = ?, role_id = ?, status_id = ?, basic_salary = ? " +
                 (updatePass ? ", password_hash = ? " : "") +
                 "WHERE id = ?";
         try (Connection c = DBConnection.getConnection();
@@ -127,7 +136,8 @@ public class EmployeeDAO {
             ps.setString(1, e.getFullName());
             ps.setInt(2, "ADMIN".equals(e.getRole().name()) ? 1 : 2);
             ps.setInt(3, e.getStatus().equals("ACTIVE") ? 1 : 2);
-            int idx = 4;
+            ps.setBigDecimal(4, e.getBasicSalary() != null ? e.getBasicSalary() : new BigDecimal("7000000"));
+            int idx = 5;
             if (updatePass) {
                 ps.setString(idx++, BCrypt.hashpw(newPlainPassword, BCrypt.gensalt()));
             }

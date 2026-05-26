@@ -17,10 +17,10 @@ public class EmployeesPanel extends JPanel {
     private final EmployeeDAO employeeDAO = new EmployeeDAO();
 
     private final DefaultTableModel model = new DefaultTableModel(
-            new Object[]{"ID", "Username", "Họ tên", "Vai trò", "Trạng thái", "Thao tác"}, 0
+            new Object[]{"ID", "Username", "Họ tên", "Lương CB", "Vai trò", "Trạng thái", "Thao tác"}, 0
     ) {
         @Override public boolean isCellEditable(int row, int column) { 
-            return column == 5; // Only action column is editable
+            return column == 6; // Only action column is editable
         }
     };
 
@@ -80,8 +80,8 @@ public class EmployeesPanel extends JPanel {
                 deleteEmployeeAt(row);
             }
         };
-        table.getColumnModel().getColumn(5).setCellRenderer(new ui.components.TableActionCellRender());
-        table.getColumnModel().getColumn(5).setCellEditor(new ui.components.TableActionCellEditor(event));
+        table.getColumnModel().getColumn(6).setCellRenderer(new ui.components.TableActionCellRender());
+        table.getColumnModel().getColumn(6).setCellEditor(new ui.components.TableActionCellEditor(event));
 
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
@@ -126,7 +126,9 @@ public class EmployeesPanel extends JPanel {
             int totalCount = employeeDAO.countTotalAdmin(keyword);
             for (Employee e : list) {
                 model.addRow(new Object[]{
-                        e.getId(), e.getUsername(), e.getFullName(), e.getRole().name(), e.getStatus(), ""
+                        e.getId(), e.getUsername(), e.getFullName(), 
+                        String.format("%,.0f", e.getBasicSalary()),
+                        e.getRole().name(), e.getStatus(), ""
                 });
             }
             paginationPanel.updatePagination(totalCount);
@@ -150,8 +152,12 @@ public class EmployeesPanel extends JPanel {
         e.setId((Integer) model.getValueAt(row, 0));
         e.setUsername((String) model.getValueAt(row, 1));
         e.setFullName((String) model.getValueAt(row, 2));
-        e.setRole(Role.valueOf((String) model.getValueAt(row, 3)));
-        e.setStatus((String) model.getValueAt(row, 4));
+        
+        String bsStr = ((String) model.getValueAt(row, 3)).replace(",", "").replace(".", "");
+        e.setBasicSalary(new java.math.BigDecimal(bsStr));
+        
+        e.setRole(Role.valueOf((String) model.getValueAt(row, 4)));
+        e.setStatus((String) model.getValueAt(row, 5));
         return e;
     }
 
@@ -236,17 +242,19 @@ public class EmployeesPanel extends JPanel {
 
     private void showForm(Employee e) {
         JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), e == null ? "Thêm Nhân Viên" : "Sửa Nhân Viên", Dialog.ModalityType.APPLICATION_MODAL);
-        dialog.setSize(400, 350);
+        dialog.setSize(400, 380);
         dialog.setLocationRelativeTo(this);
         dialog.setResizable(false);
 
-        JPanel p = new JPanel(new GridLayout(6, 2, 10, 10));
+        JPanel p = new JPanel(new GridLayout(7, 2, 10, 10));
         p.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JTextField txtUser = new JTextField(e != null ? e.getUsername() : "");
         if (e != null) txtUser.setEnabled(false); // Can't change username
         JPasswordField txtPass = new JPasswordField();
         JTextField txtName = new JTextField(e != null ? e.getFullName() : "");
+        JTextField txtSalary = new JTextField(e != null ? String.format("%.0f", e.getBasicSalary()) : "7000000");
+        
         JComboBox<String> cbRole = new JComboBox<>(new String[]{"ADMIN", "STAFF"});
         if (e != null) {
             cbRole.setSelectedItem(e.getRole().name());
@@ -265,6 +273,7 @@ public class EmployeesPanel extends JPanel {
         p.add(new JLabel("Tên đăng nhập:")); p.add(txtUser);
         p.add(new JLabel("Mật khẩu" + (e != null ? " (Để trống=Không đổi):" : ":"))); p.add(txtPass);
         p.add(new JLabel("Họ và tên:")); p.add(txtName);
+        p.add(new JLabel("Lương cơ bản:")); p.add(txtSalary);
         p.add(new JLabel("Vai trò:")); p.add(cbRole);
         p.add(new JLabel("Trạng thái:")); 
         if (e == null) {
@@ -285,14 +294,26 @@ public class EmployeesPanel extends JPanel {
                 String u = txtUser.getText().trim();
                 String pass = new String(txtPass.getPassword()).trim();
                 String n = txtName.getText().trim();
-                if (u.isEmpty() || n.isEmpty() || (e == null && pass.isEmpty())) {
-                    JOptionPane.showMessageDialog(dialog, "Vui lòng điền đủ thông tin!");
+                String s = txtSalary.getText().trim();
+                
+                if (u.isEmpty() || n.isEmpty() || s.isEmpty() || (e == null && pass.isEmpty())) {
+                    JOptionPane.showMessageDialog(dialog, "Vui lòng điền đủ thông tin bắt buộc!");
+                    return;
+                }
+                if ((e == null && pass.length() < 6) || (!pass.isEmpty() && pass.length() < 6)) {
+                    JOptionPane.showMessageDialog(dialog, "Mật khẩu phải có ít nhất 6 ký tự!");
                     return;
                 }
 
                 Employee emp = new Employee();
                 emp.setUsername(u);
                 emp.setFullName(n);
+                try {
+                    emp.setBasicSalary(new java.math.BigDecimal(s));
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(dialog, "Lương cơ bản không hợp lệ!");
+                    return;
+                }
                 emp.setRole(Role.valueOf(cbRole.getSelectedItem().toString()));
 
                 if (e == null) {

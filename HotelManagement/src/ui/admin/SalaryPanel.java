@@ -51,7 +51,7 @@ public class SalaryPanel extends JPanel {
         topPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
         add(topPanel, BorderLayout.NORTH);
 
-        String[] cols = {"ID", "Tài khoản", "Họ Tên", "Vai Trò", "Lương CB", "Doanh thu Check-in", "Doanh thu Check-out", "Hoa hồng (7-3)", "Thực lãnh"};
+        String[] cols = {"ID", "Tài khoản", "Họ Tên", "Vai Trò", "Lương cứng", "Số ngày làm", "Lương CB", "Doanh thu Check-in", "Doanh thu Check-out", "Hoa hồng (7-3)", "Thực lãnh"};
         tableModel = new DefaultTableModel(cols, 0) {
             private static final long serialVersionUID = 1L;
             @Override
@@ -93,7 +93,7 @@ public class SalaryPanel extends JPanel {
             
             try (java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.File(path), "UTF-8")) {
                 pw.write('\ufeff'); // BOM cho UTF-8
-                pw.print("\"ID\",\"Tài khoản\",\"Họ Tên\",\"Vai Trò\",\"Lương CB\",\"Doanh thu Check-in\",\"Doanh thu Check-out\",\"Hoa hồng (7-3)\",\"Thực lãnh\"\n");
+                pw.print("\"ID\",\"Tài khoản\",\"Họ Tên\",\"Vai Trò\",\"Lương cứng\",\"Số ngày làm\",\"Lương CB\",\"Doanh thu Check-in\",\"Doanh thu Check-out\",\"Hoa hồng (7-3)\",\"Thực lãnh\"\n");
                 
                 for (int i = 0; i < tableModel.getRowCount(); i++) {
                     for (int j = 0; j < tableModel.getColumnCount(); j++) {
@@ -121,6 +121,8 @@ public class SalaryPanel extends JPanel {
                         row.username,
                         row.fullName,
                         row.role,
+                        String.format("%,.0f", row.basicSalary),
+                        row.workedDays,
                         String.format("%,.0f", row.baseSalary),
                         String.format("%,.0f", row.revenueCheckin),
                         String.format("%,.0f", row.revenueCheckout),
