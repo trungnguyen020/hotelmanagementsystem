@@ -16,6 +16,7 @@ public class StaffFrame extends JFrame {
 
     private final RoomsPanel roomsPanel = new RoomsPanel();
     private final ServicesPanel servicesPanel = new ServicesPanel();
+    private final DashboardPanel dashboardPanel = new DashboardPanel();
     private final CheckinPanel checkinPanel;
     private final CheckoutPanel checkoutPanel;
 
@@ -73,10 +74,10 @@ public class StaffFrame extends JFrame {
         sidebar.add(menuContainer, BorderLayout.CENTER);
 
         menuTexts = new String[] {
-                " Quản lý phòng", " Quản lý dịch vụ", " Check-in", " Check-out", " Đăng xuất"
+                " Thông báo", " Quản lý phòng", " Quản lý dịch vụ", " Check-in", " Check-out", " Đăng xuất"
         };
-        menuButtons = new JButton[5];
-        String[] letters = { "R", "S", "I", "O", "L" };
+        menuButtons = new JButton[6];
+        String[] letters = { "D", "R", "S", "I", "O", "L" };
         Color btnBg = new Color(44, 62, 80);
         Color hoverBg = new Color(52, 73, 94); // Lighter gray-blue for hover
 
@@ -139,6 +140,7 @@ public class StaffFrame extends JFrame {
         // Cards Container
         cardPanel.setOpaque(false);
         cardPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        cardPanel.add(dashboardPanel, "dashboard");
         cardPanel.add(roomsPanel, "rooms");
         cardPanel.add(servicesPanel, "services");
         cardPanel.add(checkinPanel, "checkin");
@@ -178,24 +180,28 @@ public class StaffFrame extends JFrame {
         });
 
         menuButtons[0].addActionListener(e -> {
+            dashboardPanel.reload();
+            card.show(cardPanel, "dashboard");
+        });
+        menuButtons[1].addActionListener(e -> {
             roomsPanel.reload();
             card.show(cardPanel, "rooms");
         });
-        menuButtons[1].addActionListener(e -> {
+        menuButtons[2].addActionListener(e -> {
             servicesPanel.reload();
             card.show(cardPanel, "services");
         });
-        menuButtons[2].addActionListener(e -> card.show(cardPanel, "checkin"));
-        menuButtons[3].addActionListener(e -> {
+        menuButtons[3].addActionListener(e -> card.show(cardPanel, "checkin"));
+        menuButtons[4].addActionListener(e -> {
             checkoutPanel.reload();
             card.show(cardPanel, "checkout");
         });
-        menuButtons[4].addActionListener(e -> {
+        menuButtons[5].addActionListener(e -> {
             dispose();
             new ui.auth.LoginFrame().setVisible(true);
         });
 
-        card.show(cardPanel, "rooms");
+        card.show(cardPanel, "dashboard");
     }
 
     private void toggleSidebar() {

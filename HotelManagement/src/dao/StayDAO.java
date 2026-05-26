@@ -94,6 +94,38 @@ public class StayDAO {
         return list;
     }
 
+    public List<StayView> findStaysCheckingOutToday() throws SQLException {
+        String sql =
+            "SELECT s.id AS stay_id, r.id AS room_id, r.room_number, c.full_name AS customer_name, " +
+            "       s.checkin_at, s.expected_checkout_at, rt.price_per_night " +
+            "FROM stays s " +
+            "JOIN stay_status ss ON ss.id = s.status_id " +
+            "JOIN rooms r ON r.id = s.room_id " +
+            "JOIN room_types rt ON rt.id = r.room_type_id " +
+            "JOIN customers c ON c.id = s.customer_id " +
+            "WHERE ss.code='CHECKED_IN' AND DATE(s.expected_checkout_at) = CURDATE() " +
+            "ORDER BY s.expected_checkout_at ASC";
+
+        List<StayView> list = new ArrayList<>();
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                StayView v = new StayView();
+                v.setStayId(rs.getInt("stay_id"));
+                v.setRoomId(rs.getInt("room_id"));
+                v.setRoomNumber(rs.getString("room_number"));
+                v.setCustomerName(rs.getString("customer_name"));
+                v.setCheckinAt(rs.getTimestamp("checkin_at").toLocalDateTime());
+                Timestamp t = rs.getTimestamp("expected_checkout_at");
+                v.setExpectedCheckoutAt(t == null ? null : t.toLocalDateTime());
+                v.setPricePerNight(rs.getBigDecimal("price_per_night"));
+                list.add(v);
+            }
+        }
+        return list;
+    }
+
     public void extendExpectedCheckout(int stayId, int extraDays) throws SQLException {
         String sql =
             "UPDATE stays " +
