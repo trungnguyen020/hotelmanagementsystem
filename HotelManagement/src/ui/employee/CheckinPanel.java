@@ -5,20 +5,21 @@ import dao.RoomDAO;
 import dao.StayDAO;
 import model.Customer;
 import model.Employee;
+import model.RoomType;
 import model.RoomView;
 
 import javax.swing.*;
 import java.awt.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class CheckinPanel extends JPanel {
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private final Employee me;
+    private static final long serialVersionUID = 1L;
+    private final Employee me;
     private final RoomsPanel roomsPanel;
 
     private final RoomDAO roomDAO = new RoomDAO();
@@ -38,7 +39,11 @@ public class CheckinPanel extends JPanel {
     private final JTextField txtPhone = new JTextField(20);
     private final JTextField txtIdNo = new JTextField(20);
 
-    private final JSpinner spnDays = new JSpinner(new SpinnerNumberModel(1, 1, 365, 1));
+    // Pricing type selection
+    private final JComboBox<String> cboPricingType = new JComboBox<>(new String[]{"Theo giờ", "Qua đêm", "Theo ngày"});
+    private final JSpinner spnDuration = new JSpinner(new SpinnerNumberModel(1, 1, 365, 1));
+    private final JLabel lblDurationUnit = new JLabel("ngày");
+    private final JLabel lblPricePreview = new JLabel("");
 
     private Customer selectedCustomer = null;
 
@@ -79,8 +84,18 @@ public class CheckinPanel extends JPanel {
         c.gridx = 0; c.gridy = y; form.add(new JLabel("CCCD/ID:"), c);
         c.gridx = 1; c.gridy = y; form.add(txtIdNo, c); y++;
 
-        c.gridx = 0; c.gridy = y; form.add(new JLabel("Số ngày dự kiến:"), c);
-        c.gridx = 1; c.gridy = y; form.add(spnDays, c); y++;
+        c.gridx = 0; c.gridy = y; form.add(new JLabel("Hình thức:"), c);
+        c.gridx = 1; c.gridy = y; form.add(cboPricingType, c); y++;
+
+        c.gridx = 0; c.gridy = y; form.add(new JLabel("Thời lượng:"), c);
+        JPanel durationRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        durationRow.add(spnDuration);
+        durationRow.add(lblDurationUnit);
+        durationRow.add(Box.createHorizontalStrut(20));
+        lblPricePreview.setFont(new Font("Tahoma", Font.BOLD, 13));
+        lblPricePreview.setForeground(new Color(200, 60, 60));
+        durationRow.add(lblPricePreview);
+        c.gridx = 1; c.gridy = y; form.add(durationRow, c); y++;
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttons.setOpaque(false);
@@ -95,6 +110,7 @@ public class CheckinPanel extends JPanel {
         buttons.add(btnClear);
         add(buttons, BorderLayout.CENTER);
 
+        // Events
         btnReloadRooms.addActionListener(e -> loadAvailableRooms());
         btnCheckin.addActionListener(e -> doCheckin());
         btnClear.addActionListener(e -> clearForm());
@@ -104,7 +120,74 @@ public class CheckinPanel extends JPanel {
         cboCustomers.addActionListener(e -> onSelectCustomer());
         btnNewCustomer.addActionListener(e -> openCreateCustomer());
 
+        cboPricingType.addActionListener(e -> onPricingTypeChanged());
+        spnDuration.addChangeListener(e -> updatePricePreview());
+        cboRooms.addActionListener(e -> updatePricePreview());
+
+        // Init state
+        cboPricingType.setSelectedIndex(2); // Default: Theo ngày
+        onPricingTypeChanged();
         loadAvailableRooms();
+    }
+
+    private void onPricingTypeChanged() {
+        int idx = cboPricingType.getSelectedIndex();
+        if (idx == 0) { // Theo giờ
+            lblDurationUnit.setText("giờ");
+            spnDuration.setModel(new SpinnerNumberModel(2, 1, 72, 1));
+            spnDuration.setEnabled(true);
+        } else if (idx == 1) { // Qua đêm
+            lblDurationUnit.setText("đêm (23h→7h)");
+            spnDuration.setModel(new SpinnerNumberModel(1, 1, 1, 1));
+            spnDuration.setEnabled(false); // cố định 1 đêm
+        } else { // Theo ngày
+            lblDurationUnit.setText("ngày");
+            spnDuration.setModel(new SpinnerNumberModel(1, 1, 365, 1));
+            spnDuration.setEnabled(true);
+        }
+        updatePricePreview();
+    }
+
+    private void updatePricePreview() {
+        RoomItem room = (RoomItem) cboRooms.getSelectedItem();
+        if (room == null) {
+            lblPricePreview.setText("");
+            return;
+        }
+
+        try {
+            // Get room type info for prices
+            List<RoomType> types = roomDAO.findAllRoomTypes();
+            RoomType rt = null;
+            for (RoomType t : types) {
+                // Match by room - we need room_type_id, but we can look it up
+                // For simplicity, just find the type from the room list
+            }
+            // We don't have the room type ID easily from RoomItem, so just show a generic preview
+            // based on selected pricing type
+            int idx = cboPricingType.getSelectedIndex();
+            int duration = (Integer) spnDuration.getValue();
+            
+            if (idx == 0) {
+                lblPricePreview.setText("Tạm tính: " + duration + " giờ × giá/giờ");
+            } else if (idx == 1) {
+                lblPricePreview.setText("Tạm tính: 1 đêm × giá qua đêm");
+            } else {
+                lblPricePreview.setText("Tạm tính: " + duration + " ngày × giá/ngày");
+            }
+        } catch (Exception ex) {
+            lblPricePreview.setText("");
+        }
+    }
+
+    private String getPricingTypeCode() {
+        int idx = cboPricingType.getSelectedIndex();
+        switch (idx) {
+            case 0: return "HOURLY";
+            case 1: return "OVERNIGHT";
+            case 2: return "DAILY";
+            default: return "DAILY";
+        }
     }
 
     private void loadAvailableRooms() {
@@ -212,13 +295,35 @@ public class CheckinPanel extends JPanel {
         }
 
         try {
-            int days = (Integer) spnDays.getValue();
+            String pricingType = getPricingTypeCode();
+            int duration = (Integer) spnDuration.getValue();
             LocalDateTime checkinAt = LocalDateTime.now();
-            LocalDateTime expected = checkinAt.plusDays(days);
+            LocalDateTime expected;
 
-            int stayId = stayDAO.checkin(selectedCustomer.getId(), room.id, checkinAt, expected, me.getId());
+            if ("HOURLY".equals(pricingType)) {
+                expected = checkinAt.plusHours(duration);
+            } else if ("OVERNIGHT".equals(pricingType)) {
+                // Qua đêm: check-in từ 23h, trả phòng 7h sáng hôm sau
+                LocalDateTime tonight23 = checkinAt.toLocalDate().atTime(LocalTime.of(23, 0));
+                if (checkinAt.isAfter(tonight23)) {
+                    // Đã quá 23h → trả phòng 7h sáng ngày mai
+                    expected = checkinAt.toLocalDate().plusDays(1).atTime(LocalTime.of(7, 0));
+                } else {
+                    // Chưa 23h → trả phòng 7h sáng ngày mai
+                    expected = checkinAt.toLocalDate().plusDays(1).atTime(LocalTime.of(7, 0));
+                }
+            } else {
+                // DAILY
+                expected = checkinAt.plusDays(duration);
+            }
 
-            JOptionPane.showMessageDialog(this, "Check-in OK. StayID=" + stayId);
+            int stayId = stayDAO.checkin(selectedCustomer.getId(), room.id, checkinAt, expected, me.getId(), pricingType);
+
+            String typeLabel = cboPricingType.getSelectedItem().toString();
+            JOptionPane.showMessageDialog(this, 
+                "Check-in OK! StayID=" + stayId + 
+                "\nHình thức: " + typeLabel +
+                "\nDự kiến trả phòng: " + expected.toString().replace("T", " "));
 
             roomsPanel.reload();
             loadAvailableRooms();
@@ -239,7 +344,8 @@ public class CheckinPanel extends JPanel {
         txtName.setText("");
         txtPhone.setText("");
         txtIdNo.setText("");
-        spnDays.setValue(1);
+        cboPricingType.setSelectedIndex(2); // Default: Theo ngày
+        spnDuration.setValue(1);
     }
 
     private String nvl(String s) { return s == null ? "" : s; }

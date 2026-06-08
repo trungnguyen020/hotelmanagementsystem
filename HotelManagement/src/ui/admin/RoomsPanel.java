@@ -9,8 +9,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.math.BigDecimal;
 import java.util.List;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class RoomsPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
@@ -36,9 +38,11 @@ public class RoomsPanel extends JPanel {
         top.setOpaque(false);
 
         JButton btnAdd = createBtn("Thêm mới", new Color(46, 204, 113));
+        JButton btnRoomTypes = createBtn("Quản lý loại phòng", new Color(52, 152, 219));
         JButton btnRefresh = createBtn("Làm mới", new Color(149, 165, 166));
 
         top.add(btnAdd);
+        top.add(btnRoomTypes);
         top.add(btnRefresh);
 
         table.setFillsViewportHeight(true);
@@ -47,7 +51,8 @@ public class RoomsPanel extends JPanel {
         table.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 14));
         table.getTableHeader().setBackground(new Color(250, 250, 250));
         table.getTableHeader().setBorder(BorderFactory.createEmptyBorder());
-        table.setSelectionBackground(new Color(235, 245, 255));
+        table.setSelectionBackground(new Color(220, 235, 250));
+        table.setSelectionForeground(new Color(30, 30, 30));
         table.setShowVerticalLines(false);
         table.setShowHorizontalLines(true);
         table.setGridColor(new Color(230, 230, 230));
@@ -90,6 +95,7 @@ public class RoomsPanel extends JPanel {
 
         btnRefresh.addActionListener(e -> paginationPanel.reload());
         btnAdd.addActionListener(e -> showForm(null));
+        btnRoomTypes.addActionListener(e -> showRoomTypesDialog());
 
         loadData(paginationPanel.getOffset(), paginationPanel.getPageSize(), paginationPanel.getKeyword());
     }
@@ -209,6 +215,142 @@ public class RoomsPanel extends JPanel {
             } catch (Exception ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(dialog, "Lỗi lưu dữ liệu: " + ex.getMessage());
+            }
+        });
+
+        dialog.setVisible(true);
+    }
+
+    private void showRoomTypesDialog() {
+        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Quản lý loại phòng & giá", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setSize(700, 450);
+        dialog.setLocationRelativeTo(this);
+
+        DefaultTableModel rtModel = new DefaultTableModel(
+                new Object[]{"ID", "Tên loại", "Giá/ngày", "Giá/giờ", "Giá qua đêm", "Sức chứa"}, 0
+        ) {
+            @Override public boolean isCellEditable(int row, int col) { return false; }
+        };
+        JTable rtTable = new JTable(rtModel);
+        rtTable.setRowHeight(35);
+        rtTable.setSelectionBackground(new Color(220, 235, 250));
+        rtTable.setSelectionForeground(new Color(30, 30, 30));
+
+        Runnable loadRoomTypes = () -> {
+            try {
+                rtModel.setRowCount(0);
+                List<RoomType> types = roomDAO.findAllRoomTypes();
+                for (RoomType t : types) {
+                    rtModel.addRow(new Object[]{
+                            t.getId(), t.getName(),
+                            String.format("%,.0f", t.getPricePerNight()),
+                            String.format("%,.0f", t.getPricePerHour() != null ? t.getPricePerHour() : BigDecimal.ZERO),
+                            String.format("%,.0f", t.getPriceOvernight() != null ? t.getPriceOvernight() : BigDecimal.ZERO),
+                            t.getCapacity()
+                    });
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        };
+        loadRoomTypes.run();
+
+        JButton btnEditType = createBtn("Sửa giá loại phòng", new Color(230, 126, 34));
+        btnEditType.addActionListener(e -> {
+            int row = rtTable.getSelectedRow();
+            if (row < 0) {
+                JOptionPane.showMessageDialog(dialog, "Chọn 1 loại phòng!");
+                return;
+            }
+            int typeId = (Integer) rtModel.getValueAt(row, 0);
+            try {
+                List<RoomType> types = roomDAO.findAllRoomTypes();
+                RoomType selected = null;
+                for (RoomType t : types) {
+                    if (t.getId() == typeId) { selected = t; break; }
+                }
+                if (selected == null) return;
+                showRoomTypeForm(dialog, selected, loadRoomTypes);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.add(btnEditType);
+
+        dialog.setLayout(new BorderLayout(10, 10));
+        dialog.add(topPanel, BorderLayout.NORTH);
+        dialog.add(new JScrollPane(rtTable), BorderLayout.CENTER);
+        dialog.setVisible(true);
+    }
+
+    private void showRoomTypeForm(JDialog parent, RoomType rt, Runnable onSave) {
+        JDialog dialog = new JDialog(parent, "Sửa loại phòng: " + rt.getName(), Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setSize(420, 350);
+        dialog.setLocationRelativeTo(parent);
+
+        JPanel p = new JPanel(new GridLayout(7, 2, 10, 10));
+        p.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        JTextField txtName = new JTextField(rt.getName());
+        JTextField txtPriceNight = new JTextField(String.format("%.0f", rt.getPricePerNight()));
+        JTextField txtPriceHour = new JTextField(String.format("%.0f", rt.getPricePerHour() != null ? rt.getPricePerHour() : BigDecimal.ZERO));
+        JTextField txtPriceOvernight = new JTextField(String.format("%.0f", rt.getPriceOvernight() != null ? rt.getPriceOvernight() : BigDecimal.ZERO));
+        JTextField txtCapacity = new JTextField(String.valueOf(rt.getCapacity()));
+        JTextField txtDesc = new JTextField(rt.getDescription() != null ? rt.getDescription() : "");
+
+        p.add(new JLabel("Tên loại:")); p.add(txtName);
+        p.add(new JLabel("Giá/ngày (VNĐ):")); p.add(txtPriceNight);
+        p.add(new JLabel("Giá/giờ (VNĐ):")); p.add(txtPriceHour);
+        p.add(new JLabel("Giá qua đêm (VNĐ):")); p.add(txtPriceOvernight);
+        p.add(new JLabel("Sức chứa:")); p.add(txtCapacity);
+        p.add(new JLabel("Mô tả:")); p.add(txtDesc);
+
+        JButton btnSave = createBtn("Lưu", new Color(46, 204, 113));
+        p.add(new JLabel()); p.add(btnSave);
+
+        dialog.add(p);
+
+        btnSave.addActionListener(evt -> {
+            try {
+                String name = txtName.getText().trim();
+                BigDecimal pNight = new BigDecimal(txtPriceNight.getText().trim());
+                BigDecimal pHour = new BigDecimal(txtPriceHour.getText().trim());
+                BigDecimal pOvernight = new BigDecimal(txtPriceOvernight.getText().trim());
+                int capacity = Integer.parseInt(txtCapacity.getText().trim());
+                String desc = txtDesc.getText().trim();
+
+                if (name.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "Tên không được trống!");
+                    return;
+                }
+
+                // Cảnh báo giá không hợp lý
+                StringBuilder warnings = new StringBuilder();
+                if (pHour.multiply(new BigDecimal("24")).compareTo(pNight) <= 0) {
+                    warnings.append("⚠ Giá/giờ × 24 nên > Giá/ngày (giá theo giờ nên đắt hơn ở ngày)\n");
+                }
+                if (pOvernight.compareTo(pNight) > 0) {
+                    warnings.append("⚠ Giá qua đêm nên ≤ Giá/ngày\n");
+                }
+                if (warnings.length() > 0) {
+                    int ans = JOptionPane.showConfirmDialog(dialog,
+                            warnings.toString() + "\nBạn vẫn muốn lưu?",
+                            "Cảnh báo giá", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                    if (ans != JOptionPane.YES_OPTION) return;
+                }
+
+                roomDAO.updateRoomType(rt.getId(), name, pNight, pHour, pOvernight, capacity, desc);
+                JOptionPane.showMessageDialog(dialog, "Đã cập nhật loại phòng thành công!");
+                dialog.dispose();
+                onSave.run();
+                paginationPanel.reload(); // Refresh main room table too
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(dialog, "Giá hoặc sức chứa không hợp lệ!");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(dialog, "Lỗi: " + ex.getMessage());
             }
         });
 

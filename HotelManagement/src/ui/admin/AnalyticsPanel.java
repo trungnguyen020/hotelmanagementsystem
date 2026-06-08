@@ -18,6 +18,7 @@ import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class AnalyticsPanel extends JPanel {
     private final AnalyticsDAO analyticsDAO = new AnalyticsDAO();
 

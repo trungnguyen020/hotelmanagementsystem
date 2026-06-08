@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class RevenuePanel extends JPanel {
     /**
 	 * 

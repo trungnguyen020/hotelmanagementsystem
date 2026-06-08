@@ -86,6 +86,8 @@ CREATE TABLE room_types (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(60) NOT NULL UNIQUE,
   price_per_night DECIMAL(12,2) NOT NULL,
+  price_per_hour DECIMAL(12,2) NOT NULL DEFAULT 0,
+  price_overnight DECIMAL(12,2) NOT NULL DEFAULT 0,
   capacity INT NOT NULL,
   description VARCHAR(255),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -130,6 +132,8 @@ CREATE TABLE stays (
   CONSTRAINT fk_stay_status FOREIGN KEY (status_id) REFERENCES stay_status(id),
   CONSTRAINT fk_stay_employee FOREIGN KEY (created_by) REFERENCES employees(id)
 );
+
+ALTER TABLE stays ADD COLUMN pricing_type VARCHAR(20) DEFAULT 'DAILY';
 
 CREATE INDEX idx_stays_room ON stays(room_id);
 CREATE INDEX idx_stays_time ON stays(checkin_at, checkout_at);
@@ -195,10 +199,10 @@ INSERT INTO employees(username, password_hash, full_name, role_id, status_id) VA
 ('admin', 'admin', 'Admin', 1, 1),
 ('staff', 'staff', 'Nhan vien', 2, 1);
 
-INSERT INTO room_types(name, price_per_night, capacity, description) VALUES
-('Phòng cao cấp',      650000, 2, 'Phòng cao cấp'),
-('Phòng thông thường', 400000, 2, 'Phòng thông thường'),
-('Phòng bình dân',     300000, 2, 'Phòng bình dân');
+INSERT INTO room_types(name, price_per_night, price_per_hour, price_overnight, capacity, description) VALUES
+('Phòng cao cấp',      650000, 55000, 325000, 2, 'Phòng cao cấp'),
+('Phòng thông thường', 400000, 35000, 200000, 2, 'Phòng thông thường'),
+('Phòng bình dân',     300000, 25000, 150000, 2, 'Phòng bình dân');
 
 INSERT INTO rooms(room_number, room_type_id, status_id, note) VALUES
 ('101', 2, 1, ''),

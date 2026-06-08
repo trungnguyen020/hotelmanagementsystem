@@ -12,6 +12,7 @@ import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class DashboardPanel extends JPanel {
 
     private final StayDAO stayDAO = new StayDAO();

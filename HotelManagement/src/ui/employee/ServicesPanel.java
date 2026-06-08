@@ -14,6 +14,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class ServicesPanel extends JPanel {
 
     private static final long serialVersionUID = 1L;

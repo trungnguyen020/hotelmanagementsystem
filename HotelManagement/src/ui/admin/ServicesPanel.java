@@ -10,6 +10,7 @@ import java.awt.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class ServicesPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
@@ -46,7 +47,8 @@ public class ServicesPanel extends JPanel {
         table.setFont(new Font("Tahoma", Font.PLAIN, 14));
         table.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 14));
         table.getTableHeader().setBackground(new Color(236, 240, 241));
-        table.setSelectionBackground(new Color(189, 195, 199));
+        table.setSelectionBackground(new Color(220, 235, 250));
+        table.setSelectionForeground(new Color(30, 30, 30));
         table.setShowGrid(false);
 
         JScrollPane sp = new JScrollPane(table);

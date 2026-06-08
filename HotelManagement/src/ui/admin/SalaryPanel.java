@@ -9,6 +9,7 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class SalaryPanel extends JPanel {
     private static final long serialVersionUID = 1L;
     private final JTable table;

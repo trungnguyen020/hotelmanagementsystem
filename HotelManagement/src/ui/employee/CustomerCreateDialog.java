@@ -5,6 +5,7 @@ import model.Customer;
 import javax.swing.*;
 import java.awt.*;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class CustomerCreateDialog extends JDialog {
 
     /**

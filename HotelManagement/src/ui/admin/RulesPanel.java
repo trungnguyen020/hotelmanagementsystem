@@ -9,6 +9,7 @@ import java.awt.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class RulesPanel extends JPanel {
     private final DiscountRuleDAO ruleDAO = new DiscountRuleDAO();
     private final DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Số ngày tối thiểu", "Phần trăm giảm (%)"}, 0) {

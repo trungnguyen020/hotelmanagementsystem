@@ -10,6 +10,7 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.geom.Path2D;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class LoginFrame extends JFrame {
 
     private static final long serialVersionUID = 1L;

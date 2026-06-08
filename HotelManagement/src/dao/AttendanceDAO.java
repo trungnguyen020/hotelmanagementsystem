@@ -30,6 +30,19 @@ public class AttendanceDAO {
         }
     }
 
+    /**
+     * Deletes today's attendance record for the given employee.
+     * @return true if a record was actually deleted, false if no record existed today
+     */
+    public boolean deleteTodayAttendance(int employeeId) throws SQLException {
+        String sql = "DELETE FROM attendance WHERE employee_id = ? AND date = CURDATE()";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, employeeId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
     public int countWorkedDays(int employeeId, int month, int year) throws SQLException {
         String sql = "SELECT COUNT(DISTINCT date) FROM attendance WHERE employee_id = ? AND MONTH(date) = ? AND YEAR(date) = ?";
         try (Connection c = DBConnection.getConnection();

@@ -10,6 +10,7 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.util.List;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class CustomersPanel extends JPanel {
 
     private final CustomerDAO customerDAO = new CustomerDAO();
@@ -34,12 +35,15 @@ public class CustomersPanel extends JPanel {
         table.getTableHeader().setBackground(Color.WHITE);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         table.setSelectionBackground(new Color(220, 235, 250));
+        table.setSelectionForeground(new Color(30, 30, 30));
         table.setShowVerticalLines(false);
         table.setGridColor(new Color(230, 230, 230));
 
-        // Column Thao tác
+        // Column Thao tác - set width to fit both buttons horizontally
         table.getColumnModel().getColumn(4).setCellRenderer(new ButtonRenderer());
         table.getColumnModel().getColumn(4).setCellEditor(new ButtonEditor(new JCheckBox()));
+        table.getColumnModel().getColumn(4).setMinWidth(200);
+        table.getColumnModel().getColumn(4).setPreferredWidth(220);
 
         JScrollPane sp = new JScrollPane(table);
         sp.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
@@ -169,7 +173,7 @@ public class CustomersPanel extends JPanel {
         private JButton btnEdit = new JButton("Sửa");
 
         public ButtonRenderer() {
-            setLayout(new FlowLayout(FlowLayout.CENTER, 5, 0));
+            setLayout(new FlowLayout(FlowLayout.CENTER, 8, 5));
             setOpaque(true);
             setBackground(Color.WHITE);
 
@@ -209,7 +213,7 @@ public class CustomersPanel extends JPanel {
 
         public ButtonEditor(JCheckBox checkBox) {
             super(checkBox);
-            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 5));
 
             btnHistory = new JButton("Xem lịch sử");
             btnHistory.setBackground(new Color(60, 130, 200));

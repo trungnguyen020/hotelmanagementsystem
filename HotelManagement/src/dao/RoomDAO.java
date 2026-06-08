@@ -11,7 +11,7 @@ import java.util.List;
 public class RoomDAO {
 
     public List<RoomType> findAllRoomTypes() throws SQLException {
-        String sql = "SELECT id, name, price_per_night, capacity, description FROM room_types ORDER BY name";
+        String sql = "SELECT id, name, price_per_night, price_per_hour, price_overnight, capacity, description FROM room_types ORDER BY name";
         List<RoomType> list = new ArrayList<>();
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql);
@@ -21,6 +21,8 @@ public class RoomDAO {
                 t.setId(rs.getInt("id"));
                 t.setName(rs.getString("name"));
                 t.setPricePerNight(rs.getBigDecimal("price_per_night"));
+                t.setPricePerHour(rs.getBigDecimal("price_per_hour"));
+                t.setPriceOvernight(rs.getBigDecimal("price_overnight"));
                 t.setCapacity(rs.getInt("capacity"));
                 t.setDescription(rs.getString("description"));
                 list.add(t);
@@ -181,6 +183,23 @@ public class RoomDAO {
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, statusCode);
             ps.setInt(2, roomId);
+            ps.executeUpdate();
+        }
+    }
+
+    public void updateRoomType(int id, String name, java.math.BigDecimal pricePerNight,
+                               java.math.BigDecimal pricePerHour, java.math.BigDecimal priceOvernight,
+                               int capacity, String description) throws SQLException {
+        String sql = "UPDATE room_types SET name=?, price_per_night=?, price_per_hour=?, price_overnight=?, capacity=?, description=? WHERE id=?";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setBigDecimal(2, pricePerNight);
+            ps.setBigDecimal(3, pricePerHour);
+            ps.setBigDecimal(4, priceOvernight);
+            ps.setInt(5, capacity);
+            ps.setString(6, description != null ? description : "");
+            ps.setInt(7, id);
             ps.executeUpdate();
         }
     }

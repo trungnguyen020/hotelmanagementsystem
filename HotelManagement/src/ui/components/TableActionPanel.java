@@ -3,6 +3,7 @@ package ui.components;
 import javax.swing.*;
 import java.awt.*;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class TableActionPanel extends JPanel {
 
     private JButton btnEdit;

@@ -8,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class StaffFrame extends JFrame {
 
     private static final long serialVersionUID = 1L;

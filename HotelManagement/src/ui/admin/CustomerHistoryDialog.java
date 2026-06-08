@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class CustomerHistoryDialog extends JDialog {
 
     private final StayDAO stayDAO = new StayDAO();

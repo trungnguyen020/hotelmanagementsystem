@@ -1,5 +1,6 @@
 package ui.admin;
 
+import dao.AttendanceDAO;
 import dao.EmployeeDAO;
 import model.Employee;
 import model.Role;
@@ -11,10 +12,12 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class EmployeesPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
     private final EmployeeDAO employeeDAO = new EmployeeDAO();
+    private final AttendanceDAO attendanceDAO = new AttendanceDAO();
 
     private final DefaultTableModel model = new DefaultTableModel(
             new Object[]{"ID", "Username", "Họ tên", "Lương CB", "Vai trò", "Trạng thái", "Thao tác"}, 0
@@ -56,7 +59,8 @@ public class EmployeesPanel extends JPanel {
         table.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 14));
         table.getTableHeader().setBackground(new Color(250, 250, 250));
         table.getTableHeader().setBorder(BorderFactory.createEmptyBorder());
-        table.setSelectionBackground(new Color(235, 245, 255));
+        table.setSelectionBackground(new Color(220, 235, 250));
+        table.setSelectionForeground(new Color(30, 30, 30));
         table.setShowVerticalLines(false);
         table.setShowHorizontalLines(true);
         table.setGridColor(new Color(230, 230, 230));
@@ -210,8 +214,14 @@ public class EmployeesPanel extends JPanel {
         int ans = JOptionPane.showConfirmDialog(this, "Xác nhận cho nhân viên '" + e.getFullName() + "' nghỉ việc (đổi trạng thái thành INACTIVE)?", "Cho nghỉ việc", JOptionPane.YES_NO_OPTION);
         if (ans == JOptionPane.YES_OPTION) {
             try {
+                // Nếu nhân viên đã chấm công hôm nay thì xóa bản ghi chấm công (trừ 1 ngày làm việc)
+                boolean hadAttendance = attendanceDAO.deleteTodayAttendance(e.getId());
                 employeeDAO.deactivate(e.getId());
-                JOptionPane.showMessageDialog(this, "Đã cập nhật trạng thái nghỉ việc thành công!");
+                String msg = "Đã cập nhật trạng thái nghỉ việc thành công!";
+                if (hadAttendance) {
+                    msg += "\nĐã trừ 1 ngày công hôm nay do nhân viên đã chấm công trước đó.";
+                }
+                JOptionPane.showMessageDialog(this, msg);
                 paginationPanel.reload();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -232,7 +242,17 @@ public class EmployeesPanel extends JPanel {
         if (ans == JOptionPane.YES_OPTION) {
             try {
                 employeeDAO.activate(e.getId());
-                JOptionPane.showMessageDialog(this, "Đã khôi phục trạng thái đi làm lại thành công!");
+                // Nếu nhân viên chưa có chấm công hôm nay thì tự động chấm công lại
+                // (phục hồi ngày công bị trừ do bấm nghỉ việc nhầm)
+                boolean alreadyCheckedIn = attendanceDAO.hasCheckedInToday(e.getId());
+                String msg = "Đã khôi phục trạng thái đi làm lại thành công!";
+                if (!alreadyCheckedIn) {
+                    attendanceDAO.checkIn(e.getId());
+                    msg += "\nĐã tự động chấm công hôm nay cho nhân viên.";
+                } else {
+                    msg += "\nNhân viên đã có chấm công hôm nay, không cần cộng thêm.";
+                }
+                JOptionPane.showMessageDialog(this, msg);
                 paginationPanel.reload();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);

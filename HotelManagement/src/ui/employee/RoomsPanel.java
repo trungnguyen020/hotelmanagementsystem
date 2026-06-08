@@ -9,6 +9,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
+@SuppressWarnings({"serial", "this-escape"})
 public class RoomsPanel extends JPanel {
 
     /**
