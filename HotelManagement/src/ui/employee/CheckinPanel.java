@@ -5,12 +5,10 @@ import dao.RoomDAO;
 import dao.StayDAO;
 import model.Customer;
 import model.Employee;
-import model.RoomType;
 import model.RoomView;
 
 import javax.swing.*;
 import java.awt.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -156,15 +154,6 @@ public class CheckinPanel extends JPanel {
         }
 
         try {
-            // Get room type info for prices
-            List<RoomType> types = roomDAO.findAllRoomTypes();
-            RoomType rt = null;
-            for (RoomType t : types) {
-                // Match by room - we need room_type_id, but we can look it up
-                // For simplicity, just find the type from the room list
-            }
-            // We don't have the room type ID easily from RoomItem, so just show a generic preview
-            // based on selected pricing type
             int idx = cboPricingType.getSelectedIndex();
             int duration = (Integer) spnDuration.getValue();
             
